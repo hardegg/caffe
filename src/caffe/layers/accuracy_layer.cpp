@@ -51,6 +51,12 @@ void AccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   vector<Dtype> maxval(top_k_+1);
   vector<int> max_id(top_k_+1);
   int count = 0;
+  
+  /*
+   * Added by Fanglin
+   */
+  Dtype TP, FP, TN, FN;
+  TP = FP = TN = FN = 0;
   for (int i = 0; i < outer_num_; ++i) {
     for (int j = 0; j < inner_num_; ++j) {
       const int label_value =
@@ -76,12 +82,37 @@ void AccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           break;
         }
       }
+        
+      // check TP (true positive), FP, TN, FN        
+      for (int k = 0; k < top_k_; k++) {
+        if (bottom_data_vector[k].second == 1 && label_value == 1) {
+          ++TP;
+          break;
+        }
+        if (bottom_data_vector[k].second == 1 && label_value == 0) {
+          ++FP;
+          break;
+        }
+        if (bottom_data_vector[k].second == 0 && label_value == 0) {
+          ++TN;
+          break;
+        }
+        if (bottom_data_vector[k].second == 0 && label_value == 1) {
+          ++FN;
+          break;
+        }
+      }
       ++count;
     }
   }
 
   // LOG(INFO) << "Accuracy: " << accuracy;
   top[0]->mutable_cpu_data()[0] = accuracy / count;
+//  top[0]->mutable_cpu_data()[1] = TP / count;
+//  top[0]->mutable_cpu_data()[2] = FP / count;
+//  top[0]->mutable_cpu_data()[3] = TN / count;
+//  top[0]->mutable_cpu_data()[4] = FN / count;
+
   // Accuracy layer should not be used as a loss function.
 }
 

@@ -84,7 +84,7 @@ string BaseName(const string& path)
 {
 #ifdef __linux__
 	char *fname;
-	fname = basename((char *)videoFilename.c_str());
+	fname = basename((char *)path.c_str());
 #else
 	char drive[4096], dir[4096], fname[4096], ext[4096];
 	_splitpath(path.c_str(), drive, dir, fname, ext);

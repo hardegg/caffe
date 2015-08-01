@@ -1,0 +1,137 @@
+name: "FaceCascade_detection12" layer {
+  name: "data"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    mirror: true
+    crop_size: 12
+  }
+  data_param {
+    source: "/home/fanglin/caffe/FaceDetection/facedetection12_train_lmdb"
+    backend:LMDB
+    batch_size: 256
+  }
+}
+layer {
+  name: "data"
+  top: "data"
+  top: "label"
+  type: "Data"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    mirror: false
+    crop_size: 12
+  }
+  data_param {
+    source: "/home/fanglin/caffe/FaceDetection/facedetection12_val_face_lmdb"
+    backend:LMDB
+    batch_size: 50
+  }
+}
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  # learning rate and decay multipliers for the filters
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  # learning rate and decay multipliers for the biases
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 16
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu1"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+}
+layer {
+  name: "pool1"
+  type: "Pooling"
+  bottom: "conv1"
+  top: "pool1"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+#layer {
+#    name: "norm1"
+#    type: "LRN"
+#    bottom: "pool1"
+#    top: "norm1"
+#    lrn_param{
+#        local_size: 5
+#        alpha: 0.0001
+#        beta: 0.75
+#    }
+#}
+layer {
+  name: "fc1"
+  type: "InnerProduct"
+  bottom: "pool1"
+  top: "fc1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 16
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu2"
+  type: "ReLU"
+  bottom: "fc1"
+  top: "fc1"
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "fc1"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "fc1"
+  bottom: "label"
+  top: "loss"
+}

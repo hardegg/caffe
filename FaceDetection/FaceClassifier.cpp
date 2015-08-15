@@ -1,4 +1,5 @@
 #include "FaceClassifier.h"
+#include "utilities_common.h"
 
 FaceClassifier::FaceClassifier(const string& model_file,
                        const string& trained_file,
@@ -28,6 +29,11 @@ FaceClassifier::FaceClassifier(const string& model_file,
   else
     /* Set mean image to zero. */
     SetMean();  
+  
+  input_layer->Reshape(1, num_channels_,
+                       input_geometry_.height, input_geometry_.width);
+  /* Forward dimension change to all layers. */
+  net_->Reshape();
 }
 
 static bool PairCompare(const std::pair<float, int>& lhs,
@@ -104,11 +110,13 @@ void FaceClassifier::SetMean()
 }
 
 std::vector<float> FaceClassifier::Predict(const cv::Mat& img) {
+  /*
   Blob<float>* input_layer = net_->input_blobs()[0];
   input_layer->Reshape(1, num_channels_,
                        input_geometry_.height, input_geometry_.width);
-  /* Forward dimension change to all layers. */
+  // Forward dimension change to all layers.
   net_->Reshape();
+  */
 
   std::vector<cv::Mat> input_channels;
   WrapInputLayer(&input_channels);
@@ -169,8 +177,11 @@ void FaceClassifier::Preprocess(const cv::Mat& img,
   else
     sample_resized.convertTo(sample_float, CV_32FC1);
 
+  /*
   cv::Mat sample_normalized;
   cv::subtract(sample_float, mean_, sample_normalized);
+  */
+  cv::Mat sample_normalized = sample_float;  
 
   /* This operation will write the separate BGR planes directly to the
    * input layer of the network because it is wrapped by the cv::Mat

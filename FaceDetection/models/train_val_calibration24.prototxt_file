@@ -1,4 +1,4 @@
-name: "FaceCascade_detection12"
+name: "FaceCascade_calibration24"
 layer {
   name: "data"
   top: "data"
@@ -8,14 +8,14 @@ layer {
     phase: TRAIN
   }
   transform_param {
-    mirror: true
-    crop_size: 12
+    mirror: false  # WARNING: never use mirroring for calibration
+    crop_size: 24
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/train_detection12.txt"
+    source: "/media/ssd/data/aflw/data/faces/calibration24_train.txt"
     shuffle: true
-    new_height:12
-    new_width:12
+    new_height:24
+    new_width:24
     batch_size: 256
   }
 }
@@ -29,12 +29,12 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 12
+    crop_size: 24
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/faces/detection12_val.txt"
-    new_height:12
-    new_width:12
+    source: "/media/ssd/data/aflw/data/faces/calibration24_val.txt"
+    new_height:24
+    new_width:24
     batch_size: 50
   }
 }
@@ -54,8 +54,8 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 16
-    kernel_size: 3
+    num_output: 32
+    kernel_size: 5
     stride: 1
     weight_filler {
       type: "xavier"
@@ -82,17 +82,6 @@ layer {
   bottom: "pool1"
   top: "pool1"
 }
-#layer {
-#    name: "norm1"
-#    type: "LRN"
-#    bottom: "pool1"
-#    top: "norm1"
-#    lrn_param{
-#        local_size: 5
-#        alpha: 0.0001
-#        beta: 0.75
-#    }
-#}
 layer {
   name: "fc1"
   type: "InnerProduct"
@@ -107,7 +96,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 16
+    num_output: 64
     weight_filler {
       type: "xavier"
     }
@@ -145,7 +134,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 2
+    num_output: 45
     weight_filler {
       type: "xavier"
     }

@@ -1,3 +1,4 @@
+
 /* 
  * File:   FaceClassifier.h
  * Author: fanglin
@@ -32,6 +33,7 @@ class FaceClassifier {
              const string& mean_file = "");
 
   std::vector<Prediction> Classify(const cv::Mat& img, int N = 1);
+  std::vector<float> Predict(const cv::Mat& img);
 
  private:
   void SetMean(const string& mean_file);
@@ -39,7 +41,7 @@ class FaceClassifier {
   /* In case of now mean image. Set mean image to zero. */
   void SetMean(void); 
 
-  std::vector<float> Predict(const cv::Mat& img);
+ 
 
   void WrapInputLayer(std::vector<cv::Mat>* input_channels);
 
@@ -52,7 +54,6 @@ class FaceClassifier {
   int num_channels_;
   cv::Mat mean_; 
 };
-
 
 #endif	/* FACECLASSIFIER_H */
 

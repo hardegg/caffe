@@ -8,9 +8,9 @@ using namespace cv;
 
 int main(int argc, const char* argv[])
 {
-    string folderName = "/home/fanglin/data/VOC2007/nonPerson";
-    string oFolder = "/home/fanglin/data/aflw/aflw/data/neg12x12";
-    string listFolder = "/home/fanglin/data/aflw/aflw/data";
+    string folderName = "/media/ssd/data/VOC2007/nonPerson";
+    string oFolder = "/media/ssd/data/aflw/data/neg12x12";
+    string listFolder = "/media/ssd/data/aflw/data";
     
     vector<string> filePaths;
     GetFilePaths(folderName, ".jpg", filePaths);

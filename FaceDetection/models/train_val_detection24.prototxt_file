@@ -1,4 +1,4 @@
-name: "FaceCascade_calibration48"
+name: "FaceCascade_detection24"
 layer {
   name: "data"
   top: "data"
@@ -8,14 +8,14 @@ layer {
     phase: TRAIN
   }
   transform_param {
-    mirror: false  # WARNING: never use mirroring for calibration
-    crop_size: 48
+    mirror: true
+    crop_size: 24 
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/faces/calibration48_train.txt"
+    source: "/media/ssd/data/aflw/data/train_detection24.txt"
     shuffle: true
-    new_height:48
-    new_width:48
+    new_height:24
+    new_width:24
     batch_size: 256
   }
 }
@@ -29,12 +29,12 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 48
+    crop_size: 24
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/faces/calibration48_val.txt"
-    new_height:48
-    new_width:48
+    source: "/media/ssd/data/aflw/data/faces/detection24_val.txt"
+    new_height:24
+    new_width:24
     batch_size: 50
   }
 }
@@ -55,7 +55,7 @@ layer {
   }
   convolution_param {
     num_output: 64
-    kernel_size: 5
+    kernel_size: 3
     stride: 1
     weight_filler {
       type: "xavier"
@@ -82,59 +82,21 @@ layer {
   bottom: "pool1"
   top: "pool1"
 }
-layer {
-    name: "norm1"
-    type: "LRN"
-    bottom: "pool1"
-    top: "norm1"
-    lrn_param{
-        local_size: 9
-        alpha: 0.0001
-        beta: 0.75
-    }
-}
-layer {
-  name: "conv2"
-  type: "Convolution"
-  bottom: "norm1"
-  top: "conv2"
-  # learning rate and decay multipliers for the filters
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  # learning rate and decay multipliers for the biases
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  convolution_param {
-    num_output: 64
-    kernel_size: 5
-    stride: 1
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-    }
-  }
-}
-layer {
-    name: "norm2"
-    type: "LRN"
-    bottom: "conv2"
-    top: "norm2"
-    lrn_param{
-        local_size: 9
-        alpha: 0.0001
-        beta: 0.75
-    }
-}
+#layer {
+#    name: "norm1"
+#    type: "LRN"
+#    bottom: "pool1"
+#    top: "norm1"
+#    lrn_param{
+#        local_size: 5
+#        alpha: 0.0001
+#        beta: 0.75
+#    }
+#}
 layer {
   name: "fc1"
   type: "InnerProduct"
-  bottom: "norm2"
+  bottom: "pool1"
   top: "fc1"
   param {
     lr_mult: 1
@@ -145,7 +107,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 256
+    num_output: 128
     weight_filler {
       type: "xavier"
     }
@@ -183,7 +145,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 45
+    num_output: 2
     weight_filler {
       type: "xavier"
     }

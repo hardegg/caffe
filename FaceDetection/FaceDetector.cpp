@@ -11,6 +11,7 @@
 
 #include "FaceClassifier.h"
 #include "utilities_common.h"
+#include "FaceDetector.h"
 
 static double s_set[5] = {0.83, 0.91, 1.0, 1.10, 1.21};
 static double x_set[3] = {-0.17, 0, 0.17};
@@ -20,7 +21,12 @@ static double gs_s[45];
 static double gs_x[45];
 static double gs_y[45];
 
-void	nms( const vector<Rect>& inRects, vector<float>& scores, float overlap, vector<Rect>& outRects )
+static int gs_sizes[3] = {12, 24, 48};
+static float gs_nms_overlaps[3] = {0.75, 0.75, 0.5};
+static float gs_detect_thr[3] = {0.2, 0.0001, 0.2};
+static float gs_calibrate_thr[3] = {0.01, 0.1, 0.1};
+
+static void	nms(vector<Rect>& inRects, vector<float>& scores, float overlap)
 //% Non-maximum suppression.
 //%   pick = nms(boxes, overlap) 
 //% 
@@ -113,14 +119,135 @@ void	nms( const vector<Rect>& inRects, vector<float>& scores, float overlap, vec
     boxes.create( tmp.rows, tmp.cols, tmp.type() );
     tmp.copyTo( boxes );   
     
-    outRects.resize(boxes.rows);
+    inRects.resize(boxes.rows);
     for (int i = 0; i < boxes.rows; i++) {
-        outRects[i].x = boxes.at<float>(i, 0);
-        outRects[i].y = boxes.at<float>(i, 1);
-        outRects[i].width = boxes.at<float>(i, 2) - outRects[i].x + 1;
-        outRects[i].height = boxes.at<float>(i, 3)- outRects[i].y + 1;
+        inRects[i].x = boxes.at<float>(i, 0);
+        inRects[i].y = boxes.at<float>(i, 1);
+        inRects[i].width = boxes.at<float>(i, 2) - inRects[i].x + 1;
+        inRects[i].height = boxes.at<float>(i, 3)- inRects[i].y + 1;
     }
 
+}
+
+void FaceDetector::SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, vector<FaceClassifier*>& classifiers)
+{
+    if (classifiers.size() > 0) {
+        for (int i = 0; i < classifiers.size(); i++)
+            delete classifiers[i];
+        classifiers.clear();
+    }
+        
+    for (int i = 0; i < modelFiles.size(); i++) {
+        FaceClassifier* classifier = new FaceClassifier(modelFiles[i], trainedFiles[i]);
+        classifiers.push_back(classifier);
+    }
+}
+
+int FaceDetector::GetSlidingWindows(const Mat& img, vector<Rect>& rects)
+{
+    if (!img.data)
+        return 0;
+    
+    float scaling = 1.0*m_rootWindowSize/m_minFaceSize;
+    
+    // detection step
+    float scaleStep = 1.118; //1.118 for FDDB, 1.414 for AFW
+    // Todo: Modify it to MAX(img.cols, img.rows) to include some margin
+    float minScale = 1.0*m_minFaceSize/MIN(img.cols, img.rows);
+    vector<float> scales;
+    float scale = 1.0;
+    while(true) {
+        scales.push_back(scale*scaling);
+        scale /= scaleStep;
+        if (scale < minScale)
+            break;
+    }
+        
+    for (int f = 0; f < scales.size(); f++) {
+        Mat rszImg;
+        cv::resize(img, rszImg, cv::Size(), scales[f], scales[f]);
+        for (int r = 0; r + m_rootWindowSize < rszImg.rows; r+= m_rootSpacing) {
+            for (int c = 0; c + m_rootWindowSize < rszImg.cols; c+= m_rootSpacing) {
+                Rect rect = Rect(c, r, m_rootWindowSize, m_rootWindowSize);
+                rect.x /= scales[f];
+                rect.y /= scales[f];
+                rect.width /= scales[f];
+                rect.height /= scales[f];
+                rects.push_back(rect);
+            }
+        }
+    }
+    return rects.size();
+}
+
+void FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& scores)
+{    
+    if (m_detectors.size() != m_calibrators.size()) {
+        cout << "The number of detectors and calibrators should be same!" << endl;
+        return;
+    }
+    
+    if (m_detectors.size() < 1) {
+        cout << "There should be at least one detector." << endl;
+        return;
+    }
+    
+    // Generate sliding windows first
+    rects.clear();
+    GetSlidingWindows(img, rects); 
+    int nTotalRects = rects.size();
+    
+    // Root detector+calibrator
+    for (int i = 0; i < m_detectors.size(); i++) {
+        vector<Rect> tmpRects;
+        vector<float> tmpScores;
+        for (int j = 0; j < rects.size(); j++) {
+            Rect rect = rects[j];
+            Mat patch = img(rects[j]);
+            Mat rsz;
+            cv::resize(patch, rsz, cv::Size(gs_sizes[i], gs_sizes[i]));
+            vector<float> outputs = m_detectors[i]->Predict(rsz);
+            // Calibrate
+            
+            float fs, fx, fy;
+            fs = fx = fy = 0.0f;
+            int nEffectives = 0;
+            //if( prdct[0].first == 1) {
+            if (outputs[1] > gs_detect_thr[i]) {
+                if (true) {
+                    vector<float> label_scores = m_calibrators[i]->Predict(patch);
+                    for (int k = 0; k < label_scores.size(); k++) {
+                        if (label_scores[k]> gs_calibrate_thr[i]) {
+                            fs += gs_s[k];
+                            fx += gs_x[k];
+                            fy += gs_y[k];
+                            ++nEffectives;
+                            //cout << label_scores[i] << ", ";
+                        }
+                    }
+                    //cout << endl;
+                    //cout << "nEffectives " << nEffectives << endl;
+
+                } 
+                
+                if (nEffectives > 0) {
+                    fs /= nEffectives;
+                    fx /= nEffectives;
+                    fy /= nEffectives;
+
+                    rect = CalibrateRect(rect, -fx, -fy, 1/fs);
+                }                   
+
+//                    scores.push_back(prdct[0].second);
+                tmpScores.push_back(outputs[1]);
+                tmpRects.push_back(rect);
+            }
+        }
+        rects = tmpRects;
+        scores = tmpScores;
+        nms(rects, scores, gs_nms_overlaps[i]);
+    }   
+    cout << "Total sliding windows " << nTotalRects << endl;
 }
 
 void GenerateCalibLabelSet()
@@ -186,7 +313,7 @@ int GetAllWindows(const Mat& img, vector<Rect>& rects)
     return rects.size();
 }
 
-int FaceDetection(const Mat& img, FaceClassifier& detector, FaceClassifier& calibrator, vector<Rect>& resultRects, vector<float>& scores)
+int FaceDetection(const Mat& img, FaceClassifier& detector12, FaceClassifier& detector24, FaceClassifier& calibrator12, FaceClassifier& calibrator24, vector<Rect>& resultRects, vector<float>& scores)
 {
     if (!img.data)
         return 0;
@@ -217,8 +344,8 @@ int FaceDetection(const Mat& img, FaceClassifier& detector, FaceClassifier& cali
                 Mat patch = rszImg(rect);
                 //vector<Prediction> prdct = detector.Classify(patch);
             
-                vector<float> outputs = detector.Predict(patch);
-                float threshold = 0.1;
+                vector<float> outputs = detector12.Predict(patch);
+                float threshold = 0.2;
 
                 ++nTotalRects;
                 float fs, fx, fy;
@@ -227,7 +354,7 @@ int FaceDetection(const Mat& img, FaceClassifier& detector, FaceClassifier& cali
                 //if( prdct[0].first == 1) {
                 if (outputs[1] > threshold) {
                     if (true) {
-                        vector<float> label_scores = calibrator.Predict(patch);
+                        vector<float> label_scores = calibrator12.Predict(patch);
                         float threshold_c= 0.01;                        
                         
                         for (int i = 0; i < label_scores.size(); i++) {
@@ -264,9 +391,56 @@ int FaceDetection(const Mat& img, FaceClassifier& detector, FaceClassifier& cali
             }
         }
     }
-    vector<Rect> nmsRects;
-    nms(resultRects, scores, 0.8, nmsRects);
-    resultRects = nmsRects;
+    vector<float> tmpScores = scores;
+    
+    nms(resultRects, scores, 0.75);
+        
+    vector<Rect> tmpRects = resultRects;
+    
+    scores.clear();
+    resultRects.clear();
+    for (int i = 0; i < tmpRects.size(); i++) {
+        Mat patch;
+        tmpRects[i] &= Rect(0, 0, img.cols, img.rows);
+        cv::resize(img(tmpRects[i]), patch, Size(24, 24));
+        
+        vector<float> outputs = detector24.Predict(patch);
+        if (outputs[1] > 0.0001) {
+            Rect rect = tmpRects[i];
+            float threshold_c= 0.1;                        
+            float fs, fx, fy;
+            fs = fx = fy = 0.0f;
+            int nEffectives = 0;
+            
+            if (true) {
+                vector<float> label_scores = calibrator24.Predict(patch);
+
+                for (int l = 0; l < label_scores.size(); l++) {
+                    //cout << label_scores[l] << ", ";
+                    if (label_scores[l]> threshold_c) {
+                        fs += gs_s[l];
+                        fx += gs_x[l];
+                        fy += gs_y[l];
+                        ++nEffectives;                        
+                    }
+                }
+
+                if (nEffectives > 0) {
+                    fs /= nEffectives;
+                    fx /= nEffectives;
+                    fy /= nEffectives;
+
+                    rect = CalibrateRect(rect, -fx, -fy, 1/fs);
+                } 
+                //cout << "\nnEffectives " << nEffectives << endl;
+            }
+            resultRects.push_back(rect);
+            scores.push_back(tmpScores[i]);
+        }
+        
+    }
+    
+    nms(resultRects, scores, 0.75);
 //  std::sort(scores.begin(), scores.end());
     cout << "Total sliding windows " << nTotalRects << endl;
     cout << "Detected faces " << resultRects.size() << endl;    

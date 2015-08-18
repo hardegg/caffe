@@ -1,9 +1,9 @@
-name: "FaceCascade_detection12"
+name: "FaceCascade_detection24"
 input: "data"
 input_dim: 10
 input_dim: 3
-input_dim: 12
-input_dim: 12
+input_dim: 24
+input_dim: 24
 layer {
   name: "conv1"
   type: "Convolution"
@@ -20,7 +20,7 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 16
+    num_output: 64
     kernel_size: 3
     stride: 1
     weight_filler {
@@ -48,6 +48,17 @@ layer {
   bottom: "pool1"
   top: "pool1"
 }
+#layer {
+#    name: "norm1"
+#    type: "LRN"
+#    bottom: "pool1"
+#    top: "norm1"
+#    lrn_param{
+#        local_size: 5
+#        alpha: 0.0001
+#        beta: 0.75
+#    }
+#}
 layer {
   name: "fc1"
   type: "InnerProduct"
@@ -62,7 +73,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 16
+    num_output: 128
     weight_filler {
       type: "xavier"
     }

@@ -14,7 +14,7 @@ int main(int argc, const char* argv[])
 {
     GenerateCalibLabelSet();
     string folderName = "/media/ssd/data/VOC2007/nonPerson";
-    string oFolder = "/media/ssd/data/aflw/data/neg24x24";
+    string oFolder = "/media/ssd/data/aflw/data/neg48x48";
     string listFolder = "/media/ssd/data/aflw/data";
     
     string model_file_d12, trained_file_d12;
@@ -44,8 +44,8 @@ int main(int argc, const char* argv[])
     }
     cout << imgs.size() << " images!" << endl;
     
-    ofstream negTrListPath(string(listFolder+"/neg24_train.txt").c_str());
-    ofstream negValListPath(string(listFolder+"/neg24_val.txt").c_str());
+    ofstream negTrListPath(string(listFolder+"/neg48_train.txt").c_str());
+    ofstream negValListPath(string(listFolder+"/neg48_val.txt").c_str());
     
     long long nTotalWindows = 0;
     long long nDetected = 0;
@@ -63,14 +63,14 @@ int main(int argc, const char* argv[])
                 continue;
             patch = img(rects[j]);
 
-            cv::resize(patch, rsz, cv::Size(24, 24));
+            cv::resize(patch, rsz, cv::Size(48, 48));
             stringstream ss;
             ss << oFolder << "/neg_24x24_" << i << "_" << j << ".bmp";
             imwrite(ss.str(), rsz);
-            if (imgs.size() -i > 500)
+            //if (imgs.size() -i > 500)
                 negTrListPath << ss.str() << " " << 0 << endl;
-            else
-                negValListPath << ss.str() << " " << 0 << endl;
+            //else
+                //negValListPath << ss.str() << " " << 0 << endl;
         }
         
         for (int j = 0; j < rects.size(); j++) {

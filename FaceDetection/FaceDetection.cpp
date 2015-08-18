@@ -28,17 +28,26 @@ int main(int argc, char** argv) {
     vector<string> imgPaths;
     GetFilePaths(folderPath, ".jpg", imgPaths);
     
-    string outputFolder = "output";
-        
+    string outputFolder = "output_calib";
+    
     string model_file_d12, trained_file_d12;
     model_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection12.prototxt";
     trained_file_d12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection12_train_iter_298000.caffemodel";
     string model_file_c12, trained_file_c12;
     model_file_c12 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration12.prototxt";
     trained_file_c12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration12_train_iter_410000.caffemodel";
+    string model_file_d24, trained_file_d24;
+    model_file_d24 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection24.prototxt";
+    trained_file_d24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_train_iter_500000.caffemodel";
+    string model_file_c24, trained_file_c24;
+    model_file_c24 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration24.prototxt";
+    trained_file_c24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration24_train_iter_450000.caffemodel";
     
-    FaceClassifier detector_12(model_file_d12, trained_file_d12);
+    FaceClassifier detector_12(model_file_d12, trained_file_d12);    
     FaceClassifier calibrator_12(model_file_c12, trained_file_c12);
+    FaceClassifier detector_24(model_file_d24, trained_file_d24);
+    FaceClassifier calibrator_24(model_file_c24, trained_file_c24);
+    
     
     g_nWindows = 0;
     g_nDetectedWindows = 0;
@@ -49,14 +58,14 @@ int main(int argc, char** argv) {
         vector<Rect> resultRects;
         vector<float> scores;
         tic();
-        FaceDetection(img, detector_12, calibrator_12, resultRects, scores);
+        FaceDetection(img, detector_12, detector_24, calibrator_12, calibrator_24, resultRects, scores);
         toc();
         for (int i = 0; i < resultRects.size(); i++) {
             cv::rectangle(img, resultRects[i], CV_RGB(255, 0, 0), 2);
         }
         
         stringstream ss;
-        ss << outputFolder << "/orig_" << basename(imgPath.c_str());
+        ss << outputFolder << "/" << basename(imgPath.c_str());
         imwrite(ss.str(), img);
         imshow("img", img);
         char key = cv::waitKey(1);

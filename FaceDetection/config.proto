@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+message NetConfig_detect {
+    optional string name = 1;
+    required int32 size = 2;
+    required string modelFile = 3;
+    required string trainedFile = 4;
+    required float threshold = 5;
+    required float nmsOverlap = 6;
+}
+
+message NetConfig_calib {
+    optional string name = 1;
+    required int32 size = 2;
+    required string modelFile = 3;
+    required string trainedFile = 4;
+    required float threshold = 5;
+}
+
+message NetConfigs {
+    required string modelFolder = 1;
+    required float globalNmsOverlap = 2;
+    repeated NetConfig_detect detectNet = 3;
+    repeated NetConfig_calib calibNet = 4;
+}

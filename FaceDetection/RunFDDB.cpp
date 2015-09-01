@@ -12,6 +12,7 @@
 #include "FaceClassifier.h"
 #include "FaceDetector.h"
 #include "utilities_common.h"
+#include "config.pb.h"
 
 using namespace caffe;  // NOLINT(build/namespaces)
 using namespace cv;
@@ -20,15 +21,8 @@ using std::string;
 
 int main(int argc, char** argv) {
     ::google::InitGoogleLogging(argv[0]);
-    GenerateCalibLabelSet();
-    Caffe::set_mode(Caffe::CPU);
-    // Get files from FDDB
-    string folderPath = "/home/fanglin/data/AFW";
-    vector<string> imgPaths;
-    GetFilePaths(folderPath, ".jpg", imgPaths);
-    
-    string outputFolder = "output_calib";
         
+    
     string model_file_d12, trained_file_d12;
     model_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection12.prototxt";
     trained_file_d12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection12_train_iter_298000.caffemodel";
@@ -42,10 +36,42 @@ int main(int argc, char** argv) {
     model_file_c24 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration24.prototxt";
     trained_file_c24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration24_train_iter_450000.caffemodel";
     
-    FaceClassifier detector_12(model_file_d12, trained_file_d12);    
-    FaceClassifier calibrator_12(model_file_c12, trained_file_c12);
-    FaceClassifier detector_24(model_file_d24, trained_file_d24);
-    FaceClassifier calibrator_24(model_file_c24, trained_file_c24);
+    string model_file_d48, trained_file_d48;
+    model_file_d48 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection48.prototxt";
+    trained_file_d48 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection48_train_iter_500000.caffemodel";
+    string model_file_c48, trained_file_c48;
+    model_file_c48 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration48.prototxt";
+    trained_file_c48 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration48_train_iter_450000.caffemodel";
+        
+    vector<string> modelFiles_detect, trainedFiles_detect;
+    vector<string> modelFiles_calib, trainedFiles_calib;
+    
+    modelFiles_detect.push_back(model_file_d12);
+    modelFiles_detect.push_back(model_file_d24);
+    modelFiles_detect.push_back(model_file_d48);
+
+    trainedFiles_detect.push_back(trained_file_d12);
+    trainedFiles_detect.push_back(trained_file_d24);
+    trainedFiles_detect.push_back(trained_file_d48);
+
+    
+    modelFiles_calib.push_back(model_file_c12);
+    modelFiles_calib.push_back(model_file_c24);
+  //  modelFiles_calib.push_back(model_file_c48);
+
+    trainedFiles_calib.push_back(trained_file_c12);
+    trainedFiles_calib.push_back(trained_file_c24);
+    //trainedFiles_calib.push_back(trained_file_c48);
+
+    
+    int min_FaceSize; float scaleStep; int spacing;
+    min_FaceSize = 32; scaleStep = 1.118; spacing = 4;
+    FaceDetector facedetector(min_FaceSize, scaleStep, spacing);
+    facedetector.LoadConfigs("/home/fanglin/caffe/FaceDetection/faceConfig.txt");
+//    facedetector.SetDetectors(modelFiles_detect, trainedFiles_detect);
+//    facedetector.SetCalibrators(modelFiles_calib, trainedFiles_calib);
+
+    
 
     string baseDir = "/media/ssd/data/FDDB";
     string listFilepath = baseDir + "/FDDB-folds/imgList.txt";
@@ -69,7 +95,10 @@ int main(int argc, char** argv) {
         cout << t << endl;
         vector<Rect> rects;
         vector<float> scores;
-        int nWs = FaceDetection(img, detector_12, detector_24, calibrator_12, calibrator_24, rects, scores);
+        int nWs = facedetector.Detect(img, rects, scores);
+        
+        cout << "Total sliding windows " << nWs << endl;
+        cout << "Detected faces " << rects.size() << endl; 
         //int nWs = GetAllWindows(img, rects);
         nTotalWindows += nWs;
         nDetected += rects.size();
@@ -85,14 +114,14 @@ int main(int argc, char** argv) {
         of << rects.size() << endl;
         for (int i = 0; i < rects.size(); i++) {
             of << rects[i].x << " " << rects[i].y << " " << rects[i].width << " "
-                    << rects[i].height << " " << 1 << endl;
+                    << rects[i].height << " " << scores[i] << endl;
         }
 
         
-//        imshow("img", img);
-//        char c = cv::waitKey(1);
-//        if (c == 'q')
-//            break;q
+        imshow("img", img);
+        char c = cv::waitKey(1);
+        if (c == 'q')
+            break;
         toc();
     }
     

@@ -1,6 +1,7 @@
 #include "FaceClassifier.h"
 #include "utilities_common.h"
-
+#define CPU_ONLY
+#define BATCH_SIZE 10
 FaceClassifier::FaceClassifier(const string& model_file,
                        const string& trained_file,
                        const string& mean_file) {
@@ -30,10 +31,13 @@ FaceClassifier::FaceClassifier(const string& model_file,
     /* Set mean image to zero. */
     SetMean();  
   
+  
   input_layer->Reshape(1, num_channels_,
                        input_geometry_.height, input_geometry_.width);
+
   /* Forward dimension change to all layers. */
   net_->Reshape();
+  
 }
 
 static bool PairCompare(const std::pair<float, int>& lhs,
@@ -110,13 +114,13 @@ void FaceClassifier::SetMean()
 }
 
 std::vector<float> FaceClassifier::Predict(const cv::Mat& img) {
-  /*
-  Blob<float>* input_layer = net_->input_blobs()[0];
-  input_layer->Reshape(1, num_channels_,
-                       input_geometry_.height, input_geometry_.width);
-  // Forward dimension change to all layers.
-  net_->Reshape();
-  */
+  
+//  Blob<float>* input_layer = net_->input_blobs()[0];
+//  input_layer->Reshape(1, num_channels_,
+//                       input_geometry_.height, input_geometry_.width);
+//  // Forward dimension change to all layers.
+//  net_->Reshape();
+  
 
   std::vector<cv::Mat> input_channels;
   WrapInputLayer(&input_channels);
@@ -132,6 +136,56 @@ std::vector<float> FaceClassifier::Predict(const cv::Mat& img) {
   return std::vector<float>(begin, end);
 }
 
+std::vector<float> FaceClassifier::Predict_GPU(const vector<cv::Mat>& imgs) {
+  
+//  Blob<float>* input_layer = net_->input_blobs()[0];
+//  input_layer->Reshape(1, num_channels_,
+//                       input_geometry_.height, input_geometry_.width);
+//  // Forward dimension change to all layers.
+//  net_->Reshape();
+  
+
+  std::vector<cv::Mat> input_channels;
+  int nBatches = imgs.size() / BATCH_SIZE + 1;
+  for (int i = 0; i < nBatches; i++) {
+  //WrapInputLayer_GPU(&input_channels, imgs.size());
+
+  Preprocess_GPU(imgs, &input_channels);
+
+  net_->ForwardPrefilled();
+
+  /* Copy the output layer to a std::vector */
+  Blob<float>* output_layer = net_->output_blobs()[0];
+  const float* begin = output_layer->cpu_data();
+  const float* end = begin + output_layer->channels();
+  return std::vector<float>(begin, end);
+  }
+}
+
+void FaceClassifier::Preprocess_GPU(const vector<cv::Mat>& imgs,
+                  std::vector<cv::Mat>* input_channels)
+{
+    
+}
+void FaceClassifier::WrapInputLayer_GPU(std::vector<cv::Mat>* input_channels)
+{
+  Blob<float>* input_layer = net_->input_blobs()[0];
+
+  input_layer->Reshape(BATCH_SIZE, num_channels_,
+                       input_geometry_.height, input_geometry_.width);
+
+  /* Forward dimension change to all layers. */
+  net_->Reshape();
+  
+  int width = input_layer->width();
+  int height = input_layer->height();
+  float* input_data = input_layer->mutable_cpu_data();
+  for (int i = 0; i < input_layer->channels()*BATCH_SIZE; ++i) {
+    cv::Mat channel(height, width, CV_32FC1, input_data);
+    input_channels->push_back(channel);
+    input_data += width * height;
+  }
+}
 /* Wrap the input layer of the network in separate cv::Mat objects
  * (one per channel). This way we save one memcpy operation and we
  * don't need to rely on cudaMemcpy2D. The last preprocessing
@@ -188,7 +242,9 @@ void FaceClassifier::Preprocess(const cv::Mat& img,
    * objects in input_channels. */
   cv::split(sample_normalized, *input_channels);
 
+  /*
   CHECK(reinterpret_cast<float*>(input_channels->at(0).data)
         == net_->input_blobs()[0]->cpu_data())
     << "Input channels are not wrapping the input layer of the network.";
+  */ 
 }

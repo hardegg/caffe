@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     
     string outputFolder = "output_calib";
     
-    string model_file_d12, trained_file_d12;
+   string model_file_d12, trained_file_d12;
     model_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection12.prototxt";
     trained_file_d12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection12_train_iter_298000.caffemodel";
     string model_file_c12, trained_file_c12;
@@ -43,10 +43,38 @@ int main(int argc, char** argv) {
     model_file_c24 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration24.prototxt";
     trained_file_c24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration24_train_iter_450000.caffemodel";
     
-    FaceClassifier detector_12(model_file_d12, trained_file_d12);    
-    FaceClassifier calibrator_12(model_file_c12, trained_file_c12);
-    FaceClassifier detector_24(model_file_d24, trained_file_d24);
-    FaceClassifier calibrator_24(model_file_c24, trained_file_c24);
+    string model_file_d48, trained_file_d48;
+    model_file_d48 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection48.prototxt";
+    trained_file_d48 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection48_train_iter_500000.caffemodel";
+    string model_file_c48, trained_file_c48;
+    model_file_c48 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration48.prototxt";
+    trained_file_c48 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration48_train_iter_250000.caffemodel";
+        
+    vector<string> modelFiles_detect, trainedFiles_detect;
+    vector<string> modelFiles_calib, trainedFiles_calib;
+    
+    modelFiles_detect.push_back(model_file_d12);
+    modelFiles_detect.push_back(model_file_d24);
+    modelFiles_detect.push_back(model_file_d48);
+
+    trainedFiles_detect.push_back(trained_file_d12);
+    trainedFiles_detect.push_back(trained_file_d24);
+    trainedFiles_detect.push_back(trained_file_d48);
+
+    
+    modelFiles_calib.push_back(model_file_c12);
+    modelFiles_calib.push_back(model_file_c24);
+    //modelFiles_calib.push_back(model_file_c48);
+
+    trainedFiles_calib.push_back(trained_file_c12);
+    trainedFiles_calib.push_back(trained_file_c24);
+    //trainedFiles_calib.push_back(trained_file_c48);
+
+    
+    
+    FaceDetector facedetector(80, 1.414, 4);
+    facedetector.SetDetectors(modelFiles_detect, trainedFiles_detect);
+    facedetector.SetCalibrators(modelFiles_calib, trainedFiles_calib);
     
     
     g_nWindows = 0;
@@ -58,7 +86,7 @@ int main(int argc, char** argv) {
         vector<Rect> resultRects;
         vector<float> scores;
         tic();
-        FaceDetection(img, detector_12, detector_24, calibrator_12, calibrator_24, resultRects, scores);
+        facedetector.Detect(img, resultRects, scores);
         toc();
         for (int i = 0; i < resultRects.size(); i++) {
             cv::rectangle(img, resultRects[i], CV_RGB(255, 0, 0), 2);

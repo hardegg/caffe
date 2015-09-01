@@ -34,6 +34,7 @@ class FaceClassifier {
 
   std::vector<Prediction> Classify(const cv::Mat& img, int N = 1);
   std::vector<float> Predict(const cv::Mat& img);
+  std::vector<float> Predict_GPU(const vector<cv::Mat>& imgs);
 
  private:
   void SetMean(const string& mean_file);
@@ -44,7 +45,9 @@ class FaceClassifier {
  
 
   void WrapInputLayer(std::vector<cv::Mat>* input_channels);
-
+  void WrapInputLayer_GPU(std::vector<cv::Mat>* input_channels);
+  void Preprocess_GPU(const vector<cv::Mat>& imgs,
+                  std::vector<cv::Mat>* input_channels);    
   void Preprocess(const cv::Mat& img,
                   std::vector<cv::Mat>* input_channels);
 

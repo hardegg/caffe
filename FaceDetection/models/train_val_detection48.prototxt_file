@@ -1,8 +1,8 @@
 name: "FaceCascade_detection48"
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_48"
+  top: "data_48"
+  top: "label_48"
   type: "ImageData" 
   include {
     phase: TRAIN
@@ -10,19 +10,20 @@ layer {
   transform_param {
     mirror: true
     crop_size:48  
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/48net_mean.binrayproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/train_detection48.txt"
-    shuffle: true
+    shuffle: true #cannot shuffle to ensure 48-net and 24-net are dealing with same invividual images
     new_height:48
     new_width:48
     batch_size: 256
   }
 }
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_48"
+  top: "data_48"
+  top: "label_48"
   type: "ImageData"
   include {
     phase: TEST
@@ -30,19 +31,21 @@ layer {
   transform_param {
     mirror: false
     crop_size: 48
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/48net_mean.binrayproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/detection48_val.txt"
+    #source: "/media/ssd/data/aflw/data/train_detection48.txt"
     new_height:48
     new_width:48
     batch_size: 50
   }
 }
 layer {
-  name: "conv1"
+  name: "conv1_48"
   type: "Convolution"
-  bottom: "data"
-  top: "conv1"
+  bottom: "data_48"
+  top: "conv1_48"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -66,10 +69,10 @@ layer {
   }
 }
 layer {
-  name: "pool1"
+  name: "pool1_48"
   type: "Pooling"
-  bottom: "conv1"
-  top: "pool1"
+  bottom: "conv1_48"
+  top: "pool1_48"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -77,27 +80,26 @@ layer {
   }
 }
 layer {
-  name: "relu1"
+  name: "relu1_48"
   type: "ReLU"
-  bottom: "pool1"
-  top: "pool1"
+  bottom: "pool1_48"
+  top: "pool1_48"
 }
 layer {
-    name: "norm1"
+    name: "norm1_48"
     type: "LRN"
-    bottom: "pool1"
-    top: "norm1"
+    bottom: "pool1_48"
+    top: "norm1_48"
     lrn_param{
         local_size: 9
-        alpha: 0.0001
-        beta: 0.75
+        norm_region: WITHIN_CHANNEL
     }
 }
 layer {
-  name: "conv2"
+  name: "conv2_48"
   type: "Convolution"
-  bottom: "norm1"
-  top: "conv2"
+  bottom: "norm1_48"
+  top: "conv2_48"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -121,21 +123,20 @@ layer {
   }
 }
 layer {
-    name: "norm2"
+    name: "norm2_48"
     type: "LRN"
-    bottom: "conv2"
-    top: "norm2"
+    bottom: "conv2_48"
+    top: "norm2_48"
     lrn_param{
         local_size: 9
-        alpha: 0.0001
-        beta: 0.75
+        norm_region: WITHIN_CHANNEL
     }
 }
 layer {
-  name: "pool2"
+  name: "pool2_48"
   type: "Pooling"
-  bottom: "norm2"
-  top: "pool2"
+  bottom: "norm2_48"
+  top: "pool2_48"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -143,16 +144,16 @@ layer {
   }
 }
 layer {
-  name: "relu2"
+  name: "relu2_48"
   type: "ReLU"
-  bottom: "pool2"
-  top: "pool2"
+  bottom: "pool2_48"
+  top: "pool2_48"
 }
 layer {
-  name: "fc1"
+  name: "fc1_48"
   type: "InnerProduct"
-  bottom: "pool2"
-  top: "fc1"
+  bottom: "pool2_48"
+  top: "fc1_48"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -172,16 +173,16 @@ layer {
   }
 }
 layer {
-  name: "relu3"
+  name: "relu3_48"
   type: "ReLU"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_48"
+  top: "fc1_48"
 }
 layer {
-  name: "fc2"
+  name: "fc2_48"
   type: "InnerProduct"
-  bottom: "fc1"
-  top: "fc2"
+  bottom: "fc1_48"
+  top: "fc2_48"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -201,19 +202,19 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
+  name: "accuracy_48"
   type: "Accuracy"
-  bottom: "fc2"
-  bottom: "label"
-  top: "accuracy"
+  bottom: "fc2_48"
+  bottom: "label_48"
+  top: "accuracy_48"
   include {
     phase: TEST
   }
 }
 layer {
-  name: "loss"
+  name: "loss_48"
   type: "SoftmaxWithLoss"
-  bottom: "fc2"
-  bottom: "label"
-  top: "loss"
+  bottom: "fc2_48"
+  bottom: "label_48"
+  top: "loss_48"
 }

@@ -89,8 +89,7 @@ layer {
     top: "norm1"
     lrn_param{
         local_size: 9
-        alpha: 0.0001
-        beta: 0.75
+        norm_region: WITHIN_CHANNEL
     }
 }
 layer {
@@ -127,8 +126,7 @@ layer {
     top: "norm2"
     lrn_param{
         local_size: 9
-        alpha: 0.0001
-        beta: 0.75
+        norm_region: WITHIN_CHANNEL
     }
 }
 layer {

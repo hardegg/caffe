@@ -18,21 +18,24 @@ using std::max;
 using std::pair;
 using boost::scoped_ptr;
 
-int main(int argc, const char *argv[])
+void GenerateConstantMean(int width, int height, int nChannels, float value, const string& filepath)
 {
     BlobProto mean_blob;
-    int nChannels = 3;
-    int width = 48;
-    int height = 48;
     mean_blob.set_num(1);
-    mean_blob.set_channels(3);
+    mean_blob.set_channels(nChannels);
     mean_blob.set_height(height);
     mean_blob.set_width(width);
     int size_in_datum = nChannels * width * height;
     for (int i = 0; i < size_in_datum; ++i) {
         mean_blob.add_data(128.);
     }
-    WriteProtoToBinaryFile(mean_blob, "/home/fanglin/caffe/FaceDetection/models/48net_mean.binrayproto");
-    
+    WriteProtoToBinaryFile(mean_blob, filepath); 
+}
+
+int main(int argc, const char *argv[])
+{
+    string filepath = "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto";
+   
+       
     return 0;
 }

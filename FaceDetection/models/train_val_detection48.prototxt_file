@@ -1,8 +1,8 @@
 name: "FaceCascade_detection48"
 layer {
-  name: "data_48"
-  top: "data_48"
-  top: "label_48"
+  name: "data_d48"
+  top: "data_d48"
+  top: "label_d48"
   type: "ImageData" 
   include {
     phase: TRAIN
@@ -10,7 +10,7 @@ layer {
   transform_param {
     mirror: true
     crop_size:48  
-    mean_file: "/home/fanglin/caffe/FaceDetection/models/48net_mean.binrayproto"
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_image.binaryproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/train_detection48.txt"
@@ -21,9 +21,9 @@ layer {
   }
 }
 layer {
-  name: "data_48"
-  top: "data_48"
-  top: "label_48"
+  name: "data_d48"
+  top: "data_d48"
+  top: "label_d48"
   type: "ImageData"
   include {
     phase: TEST
@@ -31,7 +31,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 48
-    mean_file: "/home/fanglin/caffe/FaceDetection/models/48net_mean.binrayproto"
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_image.binaryproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/detection48_val.txt"
@@ -42,10 +42,10 @@ layer {
   }
 }
 layer {
-  name: "conv1_48"
+  name: "conv1_d48"
   type: "Convolution"
-  bottom: "data_48"
-  top: "conv1_48"
+  bottom: "data_d48"
+  top: "conv1_d48"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -69,10 +69,10 @@ layer {
   }
 }
 layer {
-  name: "pool1_48"
+  name: "pool1_d48"
   type: "Pooling"
-  bottom: "conv1_48"
-  top: "pool1_48"
+  bottom: "conv1_d48"
+  top: "pool1_d48"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -80,26 +80,26 @@ layer {
   }
 }
 layer {
-  name: "relu1_48"
+  name: "relu1_d48"
   type: "ReLU"
-  bottom: "pool1_48"
-  top: "pool1_48"
+  bottom: "pool1_d48"
+  top: "pool1_d48"
 }
 layer {
-    name: "norm1_48"
+    name: "norm1_d48"
     type: "LRN"
-    bottom: "pool1_48"
-    top: "norm1_48"
+    bottom: "pool1_d48"
+    top: "norm1_d48"
     lrn_param{
         local_size: 9
         norm_region: WITHIN_CHANNEL
     }
 }
 layer {
-  name: "conv2_48"
+  name: "conv2_d48"
   type: "Convolution"
-  bottom: "norm1_48"
-  top: "conv2_48"
+  bottom: "norm1_d48"
+  top: "conv2_d48"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -123,20 +123,20 @@ layer {
   }
 }
 layer {
-    name: "norm2_48"
+    name: "norm2_d48"
     type: "LRN"
-    bottom: "conv2_48"
-    top: "norm2_48"
+    bottom: "conv2_d48"
+    top: "norm2_d48"
     lrn_param{
         local_size: 9
         norm_region: WITHIN_CHANNEL
     }
 }
 layer {
-  name: "pool2_48"
+  name: "pool2_d48"
   type: "Pooling"
-  bottom: "norm2_48"
-  top: "pool2_48"
+  bottom: "norm2_d48"
+  top: "pool2_d48"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -144,16 +144,16 @@ layer {
   }
 }
 layer {
-  name: "relu2_48"
+  name: "relu2_d48"
   type: "ReLU"
-  bottom: "pool2_48"
-  top: "pool2_48"
+  bottom: "pool2_d48"
+  top: "pool2_d48"
 }
 layer {
-  name: "fc1_48"
+  name: "fc1_d48"
   type: "InnerProduct"
-  bottom: "pool2_48"
-  top: "fc1_48"
+  bottom: "pool2_d48"
+  top: "fc1_d48"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -173,16 +173,16 @@ layer {
   }
 }
 layer {
-  name: "relu3_48"
+  name: "relu3_d48"
   type: "ReLU"
-  bottom: "fc1_48"
-  top: "fc1_48"
+  bottom: "fc1_d48"
+  top: "fc1_d48"
 }
 layer {
-  name: "fc2_48"
+  name: "fc2_d48"
   type: "InnerProduct"
-  bottom: "fc1_48"
-  top: "fc2_48"
+  bottom: "fc1_d48"
+  top: "fc2_d48"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -202,19 +202,19 @@ layer {
   }
 }
 layer {
-  name: "accuracy_48"
+  name: "accuracy_d48"
   type: "Accuracy"
-  bottom: "fc2_48"
-  bottom: "label_48"
-  top: "accuracy_48"
+  bottom: "fc2_d48"
+  bottom: "label_d48"
+  top: "accuracy_d48"
   include {
     phase: TEST
   }
 }
 layer {
-  name: "loss_48"
+  name: "loss_d48"
   type: "SoftmaxWithLoss"
-  bottom: "fc2_48"
-  bottom: "label_48"
-  top: "loss_48"
+  bottom: "fc2_d48"
+  bottom: "label_d48"
+  top: "loss_d48"
 }

@@ -26,11 +26,6 @@ static double sg_s[45];
 static double sg_x[45];
 static double sg_y[45];
 
-static int sg_sizes[3] = {12, 24, 48};
-static float sg_nms_overlaps[3] = {0.75, 0.75, 0.5};
-static float sg_detect_thr[3] = {0.2, 0.0001, 0.2};
-static float sg_calibrate_thr[3] = {0.01, 0.1, 0.01};
-
 static void nms(vector<Rect>& inRects, vector<float>& scores, float overlap)
 //% Non-maximum suppression.
 //%   pick = nms(boxes, overlap) 
@@ -166,24 +161,26 @@ void FaceDetector::LoadConfigs(const string& protoFilepath)
 
 void FaceDetector::SetDetectors(const NetConfigs& configs)
 {
-    vector<string> modelFiles, trainedFiles;
+    vector<string> modelFiles, trainedFiles, meanFiles;
    
     for (int i = 0; i < configs.detectnet_size(); i++) {
         modelFiles.push_back(m_configs.modelfolder()+"/"+configs.detectnet(i).modelfile());
         trainedFiles.push_back(m_configs.modelfolder()+"/"+configs.detectnet(i).trainedfile());
+        meanFiles.push_back(m_configs.modelfolder()+"/"+configs.detectnet(i).meanimagefile());
     }
-    SetClassifiers(modelFiles, trainedFiles, m_detectors);
+    SetClassifiers(modelFiles, trainedFiles, meanFiles, m_detectors);
 }
 
 void FaceDetector::SetCalibrators(const NetConfigs& configs)
 {
-    vector<string> modelFiles, trainedFiles;
+    vector<string> modelFiles, trainedFiles, meanFiles;
    
     for (int i = 0; i < configs.calibnet_size(); i++) {
         modelFiles.push_back(m_configs.modelfolder()+"/"+configs.calibnet(i).modelfile());
         trainedFiles.push_back(m_configs.modelfolder()+"/"+configs.calibnet(i).trainedfile());
+        meanFiles.push_back(m_configs.modelfolder()+"/"+configs.detectnet(i).meanimagefile());
     }
-    SetClassifiers(modelFiles, trainedFiles, m_calibrators);
+    SetClassifiers(modelFiles, trainedFiles, meanFiles, m_calibrators);
 }
 
 void FaceDetector::SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, vector<FaceClassifier*>& classifiers)
@@ -201,7 +198,22 @@ void FaceDetector::SetClassifiers(const vector<string>& modelFiles, const vector
     }
 }
 
-int FaceDetector::GetSlidingWindows(const Mat& img, vector<Rect>& rects)
+void FaceDetector::SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, const vector<string>& meanImageFiles, vector<FaceClassifier*>& classifiers)
+{
+    assert(modelFiles.size() == trainedFiles.size());
+    if (classifiers.size() > 0) {
+        for (int i = 0; i < classifiers.size(); i++)
+            delete classifiers[i];
+        classifiers.clear();
+    }
+        
+    for (int i = 0; i < modelFiles.size(); i++) {
+        FaceClassifier* classifier = new FaceClassifier(modelFiles[i], trainedFiles[i], meanImageFiles[i]);
+        classifiers.push_back(classifier);
+    }
+}
+
+int FaceDetector::GetSlidingWindows(const Mat& img, vector<Rect>& rects, vector<float>& scores)
 {
     if (!img.data)
         return 0;
@@ -209,14 +221,13 @@ int FaceDetector::GetSlidingWindows(const Mat& img, vector<Rect>& rects)
     float scaling = 1.0*m_rootWindowSize/m_minFaceSize;
     
     // detection step
-    float scaleStep = 1.118; //1.118 for FDDB, 1.414 for AFW
     // Todo: Modify it to MAX(img.cols, img.rows) to include some margin
     float minScale = 1.0*m_minFaceSize/MIN(img.cols, img.rows);
     vector<float> scales;
     float scale = 1.0;
     while(true) {
         scales.push_back(scale*scaling);
-        scale /= scaleStep;
+        scale /= m_scaleStep;
         if (scale < minScale)
             break;
     }
@@ -232,28 +243,53 @@ int FaceDetector::GetSlidingWindows(const Mat& img, vector<Rect>& rects)
                 rect.width /= scales[f];
                 rect.height /= scales[f];
                 rects.push_back(rect);
+                scores.push_back(-100);
             }
         }
     }
     return rects.size();
 }
 
-
-void FaceDetector::CalibrateRects(const Mat& img_ext, const Size& extSize, FaceClassifier* calibrator, FaceClassifier* detector, float threshold_c, float threshold_d, vector<Rect>& rects, vector<float>& scores)
+void FaceDetector::DetectRects(const Mat& img_ext, const Size& extSize, FaceClassifier* detector, const NetConfig_detect& config, vector<Rect>& rects, vector<float>& scores)
 {
+    vector<Rect> tmpRects = rects;  
+    scores.clear();
+    rects.clear();
+    for (int i = 0; i < tmpRects.size(); i++) {
+        Mat patch;
+        Rect rect = tmpRects[i];
+        // TODO: remove bound check since we should add some margin if face is out of image
+        Rect rect_ext = rect;
+        rect_ext.x += extSize.width;
+        rect_ext.y += extSize.height;
+        Mat patch_ext = img_ext(rect_ext);
+        cv::resize(patch_ext, patch, Size(config.size(), config.size()));
+        
+        vector<float> outputs = detector->Predict(patch);
+        if (outputs[1] > config.threshold()) {
+            scores.push_back(outputs[1]);
+            rects.push_back(rect);
+        }
+    }
+}
+
+
+void FaceDetector::CalibrateRects(const Mat& img_ext, const Size& extSize, FaceClassifier* calibrator, FaceClassifier* detector, const NetConfig_calib& config_c, const NetConfig_detect& config_d, vector<Rect>& rects, vector<float>& scores)
+{
+    vector<Mat> patches(m_batchSize);
     for (int f = 0; f < rects.size(); f++) {   
         Rect rect = rects[f];
         Rect rect_ext = rect;
         rect_ext.x += extSize.width;
         rect_ext.y += extSize.height;            
-        Mat patch = img_ext(rect_ext);
-
+        Mat patch;
+        cv::resize(img_ext(rect_ext), patch, Size(config_c.size(), config_c.size()));
         vector<float> label_scores = calibrator->Predict(patch);                                             
         float fs, fx, fy;
         fs = fx = fy = 0.0f;
         int nEffectives = 0;
         for (int i = 0; i < label_scores.size(); i++) {
-            if (label_scores[i]> threshold_c) {
+            if (label_scores[i]> config_c.threshold()) {
                 fs += sg_s[i];
                 fx += sg_x[i];
                 fy += sg_y[i];
@@ -267,27 +303,26 @@ void FaceDetector::CalibrateRects(const Mat& img_ext, const Size& extSize, FaceC
             fx /= nEffectives;
             fy /= nEffectives;
 
-            rect = CalibrateRect(rect, -fx, -fy, 1/fs);
+            rect = CalibrateRect(rect, fx, fy, fs);
         }                   
         rect_ext = rect;
         rect_ext.x += extSize.width;
         rect_ext.y += extSize.height;
-        Mat patch_c = img_ext(rect_ext);
+        Mat patch_c;
+        cv::resize(img_ext(rect_ext), patch_c, Size(config_c.size(), config_c.size()));
+
         vector<float> outputs_c = detector->Predict(patch_c);
-        if (outputs_c[1] > threshold_d) {
+        if (outputs_c[1] > config_d.threshold()) {
             scores[f] = outputs_c[1];
             rects[f] = rect;
         }
     }
 }
 
+RNG rng(12345);
 
 int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& scores)
 {   
-    if (m_detectors.size() < 1) {
-        cout << "There should be at least one detector." << endl;
-        return -1;
-    }
     rects.clear();
     scores.clear();
     /*
@@ -298,8 +333,11 @@ int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& sco
     Mat img_extended;
     Size extSize(img.cols/2, img.rows/2);
     Point offset_ext = Point(extSize.width, extSize.height);
+    Scalar value = Scalar( rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255) );
+
+        
     cv::copyMakeBorder(img, img_extended, extSize.height, extSize.height, 
-            extSize.width, extSize.width, BORDER_REPLICATE, CV_RGB(0, 0, 0));
+            extSize.width, extSize.width, BORDER_REPLICATE, value);
     //--------------------------------------------------
     // Step 1: First cascade, 12-net and its calibration
     //--------------------------------------------------
@@ -314,10 +352,18 @@ int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& sco
         if (scale < minScale)
             break;
     }
-    FaceClassifier *detector12, *calibrator12;
-    detector12 = m_detectors[0];
-    NetConfig_detect config_d12 = m_configs.detectnet(0);
+    FaceClassifier *detector12 = 0, *calibrator12 = 0;
+    NetConfig_detect config_d12;
+    if (m_detectors.size() > 0) {
+        detector12 = m_detectors[0];
+        config_d12 = m_configs.detectnet(0);
+    }
     int nTotalRects = 0;
+    
+    vector<Mat> patches(m_batchSize);
+    
+    vector<Rect> rects_all;
+    vector<float> scales_all;
     for (int f = 0; f < scales.size(); f++) {
         Mat rszImg;
         cv::resize(img, rszImg, cv::Size(), scales[f], scales[f]);
@@ -325,66 +371,67 @@ int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& sco
         for (int r = 0; r + m_rootWindowSize < rszImg.rows; r+= m_rootSpacing) {
             for (int c = 0; c + m_rootWindowSize < rszImg.cols; c+= m_rootSpacing) {
                 Rect rect = Rect(c, r, m_rootWindowSize, m_rootWindowSize);
-                Mat patch = rszImg(rect);            
-                vector<float> outputs = detector12->Predict(patch);
+                //Mat patch = rszImg(rect);  
+                patches[nTotalRects%m_batchSize] = rszImg(rect);
+                rects_all.push_back(rect);
+                scales_all.push_back(scales[f]);
+                if (detector12 && (nTotalRects+1) % m_batchSize == 0) {
+                    vector<float> outputs = detector12->Predict(patches);
+                    for (int i = 0; i < patches.size(); i++) {
+                        Rect rct = rects_all[i];
+                        if (outputs[2*i+1] > config_d12.threshold()) {
+                            rct.x = rct.x / scales_all[i] + 0.5;
+                            rct.y = rct.y / scales_all[i] + 0.5;
+                            rct.width = rct.width / scales_all[i] + 0.5;
+                            rct.height = rct.height / scales_all[i] + 0.5;
+                            scores.push_back(outputs[2*i+1]);
+                            rects.push_back(rct);
+                        }
+                    }
+                    //patches.clear();
+                    rects_all.clear();
+                    scales_all.clear();
+                }
+                
                
                 ++nTotalRects;               
-                
-                if (outputs[1] > config_d12.threshold()) {
-                    rect.x = rect.x / scales[f] + 0.5;
-                    rect.y = rect.y / scales[f] + 0.5;
-                    rect.width = rect.width / scales[f] + 0.5;
-                    rect.height = rect.height / scales[f] + 0.5;
-                    scores.push_back(outputs[1]);
-                    rects.push_back(rect);
-                }
+//                vector<float> outputs = detector12->Predict(patch);
+//                if (outputs[1] > config_d12.threshold()) {
+//                    rect.x = rect.x / scales[f] + 0.5;
+//                    rect.y = rect.y / scales[f] + 0.5;
+//                    rect.width = rect.width / scales[f] + 0.5;
+//                    rect.height = rect.height / scales[f] + 0.5;
+//                    scores.push_back(outputs[1]);
+//                    rects.push_back(rect);
+//                }
             }
-        }
+        }        
+    }  
+    int nLeft = nTotalRects%m_batchSize;
+    if (detector12 && nLeft > 0) {        
+        vector<Mat> patches_left(patches.begin(), patches.begin()+nLeft);
+        vector<float> outputs = detector12->Predict(patches_left);
+        for (int i = 0; i < patches_left.size(); i++) {
+            Rect rct = rects_all[i];
+            if (outputs[2*i+1] > config_d12.threshold()) {
+                rct.x = rct.x / scales_all[i] + 0.5;
+                rct.y = rct.y / scales_all[i] + 0.5;
+                rct.width = rct.width / scales_all[i] + 0.5;
+                rct.height = rct.height / scales_all[i] + 0.5;
+                scores.push_back(outputs[2*i+1]);
+                rects.push_back(rct);
+            }
+        }        
     }
+    patches.clear();
+    rects_all.clear();
+    scales_all.clear();
     
     if (m_calibrators.size() >= 1) {
         NetConfig_calib config_c12 = m_configs.calibnet(0);
         calibrator12 = m_calibrators[0];
-//        CalibrateRects(img_extended, extSize, calibrator12, detector12, 
-//                config_c12.threshold(), config_d12.threshold(), rects, scores);
-        for (int f = 0; f < rects.size(); f++) {   
-            Rect rect = rects[f];
-            Rect rect_ext = rect;
-            rect_ext.x += offset_ext.x;
-            rect_ext.y += offset_ext.y;            
-            Mat patch = img_extended(rect_ext);
-            
-            vector<float> label_scores = calibrator12->Predict(patch);                                             
-            float fs, fx, fy;
-            fs = fx = fy = 0.0f;
-            int nEffectives = 0;
-            for (int i = 0; i < label_scores.size(); i++) {
-                if (label_scores[i]> sg_calibrate_thr[0]) {
-                    fs += sg_s[i];
-                    fx += sg_x[i];
-                    fy += sg_y[i];
-                    ++nEffectives;
-                    //cout << label_scores[i] << ", ";
-                }
-            }
-            
-            if (nEffectives > 0) {
-                fs /= nEffectives;
-                fx /= nEffectives;
-                fy /= nEffectives;
-
-                rect = CalibrateRect(rect, -fx, -fy, 1/fs);
-            }                   
-            rect_ext = rect;
-            rect_ext.x += offset_ext.x;
-            rect_ext.y += offset_ext.y;
-            Mat patch_c = img_extended(rect_ext);
-            vector<float> outputs_c = detector12->Predict(patch_c);
-            if (outputs_c[1] > config_d12.threshold()) {
-                scores[f] = outputs_c[1];
-                rects[f] = rect;
-            }
-        }
+        CalibrateRects(img_extended, extSize, calibrator12, detector12, 
+                config_c12, config_d12, rects, scores);
     }
     // First NMS after calibration. Only do nms when calibration is done.
     if (m_calibrators.size() >= 1)
@@ -396,140 +443,42 @@ int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& sco
     //----------------------------------------------------------------
     // Step 2: 24-net detection and calibration
     //----------------------------------------------------------------
-    vector<Rect> tmpRects = rects;  
-    scores.clear();
-    rects.clear();
     FaceClassifier *detector24, *calibrator24;
     detector24 = m_detectors[1];
-    for (int i = 0; i < tmpRects.size(); i++) {
-        Mat patch;
-        Rect rect = tmpRects[i];
-        // TODO: remove bound check since we should add some margin if face is out of image
-        Rect rect_ext = rect;
-        rect_ext.x += offset_ext.x;
-        rect_ext.y += offset_ext.y;
-        Mat patch_ext = img_extended(rect_ext);
-        cv::resize(patch_ext, patch, Size(24, 24));
-        
-        vector<float> outputs = detector24->Predict(patch);
-        if (outputs[1] > sg_detect_thr[1]) {
-            
-            float fs, fx, fy;
-            fs = fx = fy = 0.0f;
-            int nEffectives = 0;
-            
-            if (m_calibrators.size() >= 2) {
-                calibrator24 = m_calibrators[1];
-                vector<float> label_scores = calibrator24->Predict(patch);
-
-                for (int l = 0; l < label_scores.size(); l++) {
-                    //cout << label_scores[l] << ", ";
-                    if (label_scores[l]> sg_calibrate_thr[1]) {
-                        fs += sg_s[l];
-                        fx += sg_x[l];
-                        fy += sg_y[l];
-                        ++nEffectives;                        
-                    }
-                }
-
-                if (nEffectives > 0) {
-                    fs /= nEffectives;
-                    fx /= nEffectives;
-                    fy /= nEffectives;
-
-                    rect = CalibrateRect(rect, -fx, -fy, 1/fs);
-                } 
-                //cout << "\nnEffectives " << nEffectives << endl;
-            }
-            Rect rect_ext = rect;
-            rect_ext.x += offset_ext.x;
-            rect_ext.y += offset_ext.y;
-            Mat patch_c = img_extended(rect_ext);
-            vector<float> outputs_c = detector24->Predict(patch_c);
-            if (outputs_c[1] > sg_detect_thr[1]) {
-                scores.push_back(outputs_c[1]);
-                rects.push_back(rect);
-            }
-        }
-        
+    NetConfig_detect config_d24 = m_configs.detectnet(1);
+    DetectRects(img_extended, extSize, detector24, config_d24, rects, scores);
+    if (m_calibrators.size() >= 2) {
+        NetConfig_calib config_c24 = m_configs.calibnet(1);
+        calibrator24 = m_calibrators[1];
+        CalibrateRects(img_extended, extSize, calibrator24, detector24, 
+                config_c24, config_d24, rects, scores);
     }
+    
     // Second NMS after calibration. Only do nms when calibration is done.
     if (m_calibrators.size() >= 2)
         nms(rects, scores, 0.75);
     
     if (m_detectors.size() < 3)
         return nTotalRects;
+    
     //----------------------------------------------------------------
-    // Step 2: 48-net detection and calibration
+    // Step 3: 48-net detection and calibration
     // Detection-> NMS -> Calibration
     //----------------------------------------------------------------
-    tmpRects = rects;         
-    scores.clear();
-    rects.clear();
     FaceClassifier *detector48, *calibrator48;
     detector48 = m_detectors[2];
-    for (int i = 0; i < tmpRects.size(); i++) {
-        Mat patch;
-        Rect rect = tmpRects[i];
-        // TODO: remove bound check since we should add some margin if face is out of image
-        Rect rect_ext = rect;
-        rect_ext.x += offset_ext.x;
-        rect_ext.y += offset_ext.y;
-        Mat patch_ext = img_extended(rect_ext);
-        cv::resize(patch_ext, patch, Size(48, 48));
-        
-        vector<float> outputs = detector48->Predict(patch);
-        if (outputs[1] > sg_detect_thr[2]) {
-        //if (outputs[1] > outputs[0]) {                      
-            rects.push_back(rect);
-            scores.push_back(outputs[1]);
-        }
-        
-    }
-    
+    NetConfig_detect config_d48 = m_configs.detectnet(2);
+    DetectRects(img_extended, extSize, detector48, config_d48, rects, scores);
     // Global NMS.
     nms(rects, scores, 0.5);    
-    nms(rects, scores, 0.1);
-
-    
+    //nms(rects, scores, 0.1);    
     
     // Third calibration
-     if (m_calibrators.size() >= 3) {
+    if (m_calibrators.size() >= 3) {
+        NetConfig_calib config_c48 = m_configs.calibnet(1);
         calibrator48 = m_calibrators[2];
-        for (int i = 0; i < rects.size(); i++) {       
-            Mat patch;
-            Rect rect = rects[i];
-            // TODO: remove bound check since we should add some margin if face is out of image
-            Rect rect_ext = rect;
-            rect_ext.x += offset_ext.x;
-            rect_ext.y += offset_ext.y;
-            Mat patch_ext = img_extended(rect_ext);
-            cv::resize(patch_ext, patch, Size(48, 48));
-            
-            vector<float> label_scores = calibrator48->Predict(patch);
-            float fs, fx, fy;
-            fs = fx = fy = 0.0f;
-            int nEffectives = 0;         
-            for (int l = 0; l < label_scores.size(); l++) {
-                //cout << label_scores[l] << ", ";
-                if (label_scores[l]> sg_calibrate_thr[2]) {
-                    fs += sg_s[l];
-                    fx += sg_x[l];
-                    fy += sg_y[l];
-                    ++nEffectives;                        
-                }
-            }
-
-            if (nEffectives > 0) {
-                fs /= nEffectives;
-                fx /= nEffectives;
-                fy /= nEffectives;
-
-                rect = CalibrateRect(rect, -fx, -fy, 1/fs);
-            } 
-            rects[i] = rect;
-            //cout << "\nnEffectives " << nEffectives << endl;
-        }
+        CalibrateRects(img_extended, extSize, calibrator48, detector48, 
+                config_c48, config_d48, rects, scores);
     }
 //  std::sort(scores.begin(), scores.end());          
     return nTotalRects;
@@ -551,10 +500,10 @@ void GenerateCalibLabelSet()
 
 Rect CalibrateRect(const Rect rect, float ex, float ey, float es)
 {
-    int rx = cvRound(rect.x - ex*rect.width/es);
-    int ry = cvRound(rect.y - ey*rect.height/es);
-    int rw = cvRound(rect.width/es);
-    int rh = cvRound(rect.height/es);
+    int rx = cvRound(rect.x + ex*rect.width/es);
+    int ry = cvRound(rect.y + ey*rect.height/es);
+    int rw = cvRound(rect.width*es);
+    int rh = cvRound(rect.height*es);
     
     cv::Rect eRect = cv::Rect(rx, ry, rw, rh);
     return eRect;

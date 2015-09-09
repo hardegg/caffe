@@ -1,8 +1,8 @@
 name: "FaceCascade_calibration24"
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_c24"
+  top: "data_c24"
+  top: "label_c24"
   type: "ImageData" 
   include {
     phase: TRAIN
@@ -20,9 +20,9 @@ layer {
   }
 }
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_c24"
+  top: "data_c24"
+  top: "label_c24"
   type: "ImageData"
   include {
     phase: TEST
@@ -39,10 +39,10 @@ layer {
   }
 }
 layer {
-  name: "conv1"
+  name: "conv1_c24"
   type: "Convolution"
-  bottom: "data"
-  top: "conv1"
+  bottom: "data_c24"
+  top: "conv1_c24"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -66,10 +66,10 @@ layer {
   }
 }
 layer {
-  name: "pool1"
+  name: "pool1_c24"
   type: "Pooling"
-  bottom: "conv1"
-  top: "pool1"
+  bottom: "conv1_c24"
+  top: "pool1_c24"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -77,16 +77,16 @@ layer {
   }
 }
 layer {
-  name: "relu1"
+  name: "relu1_c24"
   type: "ReLU"
-  bottom: "pool1"
-  top: "pool1"
+  bottom: "pool1_c24"
+  top: "pool1_c24"
 }
 layer {
-  name: "fc1"
+  name: "fc1_c24"
   type: "InnerProduct"
-  bottom: "pool1"
-  top: "fc1"
+  bottom: "pool1_c24"
+  top: "fc1_c24"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -106,10 +106,10 @@ layer {
   }
 }
 layer {
-  name: "relu2"
+  name: "relu2_c24"
   type: "ReLU"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_c24"
+  top: "fc1_c24"
 }
 #layer {
 #  name: "drop1"
@@ -121,10 +121,10 @@ layer {
 #  }
 #}
 layer {
-  name: "fc2"
+  name: "fc2_c24"
   type: "InnerProduct"
-  bottom: "fc1"
-  top: "fc2"
+  bottom: "fc1_c24"
+  top: "fc2_c24"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -144,19 +144,19 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
+  name: "accuracy_c24"
   type: "Accuracy"
-  bottom: "fc2"
-  bottom: "label"
-  top: "accuracy"
+  bottom: "fc2_c24"
+  bottom: "label_c24"
+  top: "accuracy_c24"
   include {
     phase: TEST
   }
 }
 layer {
-  name: "loss"
+  name: "loss_c24"
   type: "SoftmaxWithLoss"
-  bottom: "fc2"
-  bottom: "label"
-  top: "loss"
+  bottom: "fc2_c24"
+  bottom: "label_c24"
+  top: "loss_c24"
 }

@@ -3,7 +3,7 @@
 # N.B. set the path to the imagenet train + val data dirs
 
 EXAMPLE=FaceDetection
-DATA=/home/fanglin/data/aflw/aflw/data
+DATA=/media/ssd/data/aflw/data
 TOOLS=build/tools
 
 TRAIN_DATA_ROOT=/
@@ -59,6 +59,6 @@ GLOG_logtostderr=1 $TOOLS/convert_imageset \
     --resize_width=$RESIZE_WIDTH \
     --shuffle \
     $VAL_DATA_ROOT \
-    $DATA/faces/detection12_val.txt \
-    $EXAMPLE/facedetection12_val_face_lmdb
+    $DATA/faces/detection48_train.txt \
+    $EXAMPLE/facedetection48_val_face_lmdb
 echo "Done."

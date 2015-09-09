@@ -1,8 +1,8 @@
 name: "FaceCascade_detection24"
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_d24"
+  top: "data_d24"
+  top: "label_d24"
   type: "ImageData" 
   include {
     phase: TRAIN
@@ -10,6 +10,8 @@ layer {
   transform_param {
     mirror: true
     crop_size: 24 
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const128.binaryproto"
+
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/train_detection24.txt"
@@ -20,9 +22,9 @@ layer {
   }
 }
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_d24"
+  top: "data_d24"
+  top: "label_d24"
   type: "ImageData"
   include {
     phase: TEST
@@ -30,6 +32,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 24
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const128.binaryproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/detection24_val.txt"
@@ -39,10 +42,10 @@ layer {
   }
 }
 layer {
-  name: "conv1"
+  name: "conv1_d24"
   type: "Convolution"
-  bottom: "data"
-  top: "conv1"
+  bottom: "data_d24"
+  top: "conv1_d24"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -55,7 +58,7 @@ layer {
   }
   convolution_param {
     num_output: 64
-    kernel_size: 3
+    kernel_size: 5
     stride: 1
     weight_filler {
       type: "xavier"
@@ -66,10 +69,10 @@ layer {
   }
 }
 layer {
-  name: "pool1"
+  name: "pool1_d24"
   type: "Pooling"
-  bottom: "conv1"
-  top: "pool1"
+  bottom: "conv1_d24"
+  top: "pool1_d24"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -77,16 +80,16 @@ layer {
   }
 }
 layer {
-  name: "relu1"
+  name: "relu1_d24"
   type: "ReLU"
-  bottom: "pool1"
-  top: "pool1"
+  bottom: "pool1_d24"
+  top: "pool1_24"
 }
 layer {
-  name: "fc1"
+  name: "fc1_d24"
   type: "InnerProduct"
-  bottom: "pool1"
-  top: "fc1"
+  bottom: "pool1_d24"
+  top: "fc1_d24"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -106,10 +109,10 @@ layer {
   }
 }
 layer {
-  name: "relu2"
+  name: "relu2_d24"
   type: "ReLU"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_d24"
+  top: "fc1_d24"
 }
 #layer {
 #  name: "drop1"
@@ -121,10 +124,10 @@ layer {
 #  }
 #}
 layer {
-  name: "fc2"
+  name: "fc2_d24"
   type: "InnerProduct"
-  bottom: "fc1"
-  top: "fc2"
+  bottom: "fc1_d24"
+  top: "fc2_d24"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -144,19 +147,19 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
+  name: "accuracy_d24"
   type: "Accuracy"
-  bottom: "fc2"
-  bottom: "label"
-  top: "accuracy"
+  bottom: "fc2_d24"
+  bottom: "label_d24"
+  top: "accuracy_d24"
   include {
     phase: TEST
   }
 }
 layer {
-  name: "loss"
+  name: "loss_d24"
   type: "SoftmaxWithLoss"
-  bottom: "fc2"
-  bottom: "label"
-  top: "loss"
+  bottom: "fc2_d24"
+  bottom: "label_d24"
+  top: "loss_d24"
 }

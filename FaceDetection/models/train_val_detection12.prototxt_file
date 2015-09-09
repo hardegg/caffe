@@ -1,18 +1,19 @@
 name: "FaceCascade_detection12"
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_d12"
+  top: "data_d12"
+  top: "label_d12"
   type: "ImageData" 
   include {
     phase: TRAIN
   }
   transform_param {
-    mirror: true
+    mirror: false #NOTE: we have flipped faces during sample generation
     crop_size: 12
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto"
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/train_detection12.txt"
+    source: "/media/ssd/data/aflw/data/train_detection12_noflip.txt"
     shuffle: true
     new_height:12
     new_width:12
@@ -20,9 +21,9 @@ layer {
   }
 }
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_d12"
+  top: "data_d12"
+  top: "label_d12"
   type: "ImageData"
   include {
     phase: TEST
@@ -30,19 +31,20 @@ layer {
   transform_param {
     mirror: false
     crop_size: 12
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto"
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/faces/detection12_val.txt"
+    source: "/media/ssd/data/aflw/data/faces/detection12_val_noflip.txt"
     new_height:12
     new_width:12
     batch_size: 50
   }
 }
 layer {
-  name: "conv1"
+  name: "conv1_d12"
   type: "Convolution"
-  bottom: "data"
-  top: "conv1"
+  bottom: "data_d12"
+  top: "conv1_d12"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -66,10 +68,10 @@ layer {
   }
 }
 layer {
-  name: "pool1"
+  name: "pool1_d12"
   type: "Pooling"
-  bottom: "conv1"
-  top: "pool1"
+  bottom: "conv1_d12"
+  top: "pool1_d12"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -77,10 +79,10 @@ layer {
   }
 }
 layer {
-  name: "relu1"
+  name: "relu1_d12"
   type: "ReLU"
-  bottom: "pool1"
-  top: "pool1"
+  bottom: "pool1_d12"
+  top: "pool1_d12"
 }
 #layer {
 #    name: "norm1"
@@ -94,10 +96,10 @@ layer {
 #    }
 #}
 layer {
-  name: "fc1"
+  name: "fc1_d12"
   type: "InnerProduct"
-  bottom: "pool1"
-  top: "fc1"
+  bottom: "pool1_d12"
+  top: "fc1_d12"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -117,25 +119,25 @@ layer {
   }
 }
 layer {
-  name: "relu2"
+  name: "relu2_d12"
   type: "ReLU"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_d12"
+  top: "fc1_d12"
 }
 #layer {
-#  name: "drop1"
+#  name: "drop1_d12"
 #  type: "Dropout"
-#  bottom: "fc1"
-#  top: "fc1"
+#  bottom: "fc1_d12"
+#  top: "fc1_d12"
 #  dropout_param {
 #      dropout_ratio: 0.5
 #  }
 #}
 layer {
-  name: "fc2"
+  name: "fc2_d12"
   type: "InnerProduct"
-  bottom: "fc1"
-  top: "fc2"
+  bottom: "fc1_d12"
+  top: "fc2_d12"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -155,19 +157,19 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
+  name: "accuracy_d12"
   type: "Accuracy"
-  bottom: "fc2"
-  bottom: "label"
-  top: "accuracy"
+  bottom: "fc2_d12"
+  bottom: "label_d12"
+  top: "accuracy_d12"
   include {
     phase: TEST
   }
 }
 layer {
-  name: "loss"
+  name: "loss_d12"
   type: "SoftmaxWithLoss"
-  bottom: "fc2"
-  bottom: "label"
-  top: "loss"
+  bottom: "fc2_d12"
+  bottom: "label_d12"
+  top: "loss_d12"
 }

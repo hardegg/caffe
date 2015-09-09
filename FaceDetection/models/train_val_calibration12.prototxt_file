@@ -1,8 +1,8 @@
 name: "FaceCascade_calibration12"
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_c12"
+  top: "data_c12"
+  top: "label_c12"
   type: "ImageData" 
   include {
     phase: TRAIN
@@ -10,6 +10,7 @@ layer {
   transform_param {
     mirror: false  # WARNING: never use mirroring for calibration
     crop_size: 12
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration12_train.txt"
@@ -20,9 +21,9 @@ layer {
   }
 }
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_c12"
+  top: "data_c12"
+  top: "label_c12"
   type: "ImageData"
   include {
     phase: TEST
@@ -30,6 +31,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 12
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration12_val.txt"
@@ -39,10 +41,10 @@ layer {
   }
 }
 layer {
-  name: "conv1"
+  name: "conv1_c12"
   type: "Convolution"
-  bottom: "data"
-  top: "conv1"
+  bottom: "data_c12"
+  top: "conv1_c12"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -66,10 +68,10 @@ layer {
   }
 }
 layer {
-  name: "pool1"
+  name: "pool1_c12"
   type: "Pooling"
-  bottom: "conv1"
-  top: "pool1"
+  bottom: "conv1_c12"
+  top: "pool1_c12"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -77,10 +79,10 @@ layer {
   }
 }
 layer {
-  name: "relu1"
+  name: "relu1_c12"
   type: "ReLU"
-  bottom: "pool1"
-  top: "pool1"
+  bottom: "pool1_c12"
+  top: "pool1_c12"
 }
 #layer {
 #    name: "norm1"
@@ -94,10 +96,10 @@ layer {
 #    }
 #}
 layer {
-  name: "fc1"
+  name: "fc1_c12"
   type: "InnerProduct"
-  bottom: "pool1"
-  top: "fc1"
+  bottom: "pool1_c12"
+  top: "fc1_c12"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -107,7 +109,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 256
+    num_output: 128 
     weight_filler {
       type: "xavier"
     }
@@ -117,10 +119,10 @@ layer {
   }
 }
 layer {
-  name: "relu2"
+  name: "relu2_c12"
   type: "ReLU"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_c12"
+  top: "fc1_c12"
 }
 #layer {
 #  name: "drop1"
@@ -132,10 +134,10 @@ layer {
 #  }
 #}
 layer {
-  name: "fc2"
+  name: "fc2_c12"
   type: "InnerProduct"
-  bottom: "fc1"
-  top: "fc2"
+  bottom: "fc1_c12"
+  top: "fc2_c12"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -155,19 +157,19 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
+  name: "accuracy_c12"
   type: "Accuracy"
-  bottom: "fc2"
-  bottom: "label"
-  top: "accuracy"
+  bottom: "fc2_c12"
+  bottom: "label_c12"
+  top: "accuracy_c12"
   include {
     phase: TEST
   }
 }
 layer {
-  name: "loss"
+  name: "loss_c12"
   type: "SoftmaxWithLoss"
-  bottom: "fc2"
-  bottom: "label"
-  top: "loss"
+  bottom: "fc2_c12"
+  bottom: "label_c12"
+  top: "loss_c12"
 }

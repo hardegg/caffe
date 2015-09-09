@@ -20,6 +20,15 @@ int FaceDetection(const Mat& img, FaceClassifier& detector12, FaceClassifier& de
 
 int GetAllWindows(const Mat& img, vector<Rect>& rects);
 
+inline void AFLWRect2FDDB(Rect& rect)
+{
+    float xExt = -0.1;
+    float yOffset = -0.05;
+    rect.x -= xExt*rect.width;
+    rect.y += yOffset*rect.height;
+    rect.width *= (1+2*xExt);    
+}
+
 class FaceDetector
 {
 //    struct NetConfig
@@ -40,17 +49,18 @@ class FaceDetector
 //    };
     
 public:
-    FaceDetector():m_minFaceSize(32), m_scaleStep(1.118f), m_rootSpacing(4),m_rootWindowSize(12)
+    FaceDetector():m_minFaceSize(32), m_scaleStep(1.118f), m_rootSpacing(4),m_rootWindowSize(12), m_batchSize(4)
     {
         GenerateCalibLabelSet();
     }
-    FaceDetector(int min_FaceSize, float scaleStep, int spacing):m_minFaceSize(min_FaceSize),m_scaleStep(scaleStep), m_rootSpacing(spacing),m_rootWindowSize(12)
+    FaceDetector(int min_FaceSize, float scaleStep, int spacing):m_minFaceSize(min_FaceSize),m_scaleStep(scaleStep), m_rootSpacing(spacing),m_rootWindowSize(12), , m_batchSize(4)
     {
         GenerateCalibLabelSet();
     }
     ~FaceDetector();
     
 public:
+    void SetBatchSize(int batchSize) { m_batchSize = batchSize; }
     void LoadConfigs(const string& protoFilepath);
     void SetDetectors(const NetConfigs& configs);
     void SetCalibrators(const NetConfigs& configs);
@@ -63,14 +73,18 @@ public:
         SetClassifiers(modelFiles, trainedFiles, m_calibrators);
     }
     
+    int GetSlidingWindows(const Mat& img, vector<Rect>& rects, vector<float>& scores);
+
+    
     int Detect(const Mat& img, vector<Rect>& rects, vector<float>& scores);
 private:
-    void DetectRects(const Mat& img, const FaceClassifier& detector, float threshold, vector<Rect>& rects, vector<float>& scores);
-    void CalibrateRects(const Mat& img_ext, const Size& extSize, FaceClassifier* calibrator, FaceClassifier* detector, float threshold_c, float threshold_d, vector<Rect>& rects, vector<float>& scores);
+    void DetectRects(const Mat& img_ext, const Size& extSize, FaceClassifier* detector, const NetConfig_detect& config, vector<Rect>& rects, vector<float>& scores);
+    void CalibrateRects(const Mat& img_ext, const Size& extSize, FaceClassifier* calibrator, FaceClassifier* detector, const NetConfig_calib& config_c, const NetConfig_detect& config_d, vector<Rect>& rects, vector<float>& scores);
 
     
     void SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, vector<FaceClassifier*>& classifiers);
-    int GetSlidingWindows(const Mat& img, vector<Rect>& rects);
+    void SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, const vector<string>& meanImageFiles, vector<FaceClassifier*>& classifiers);
+
     
 private:
     vector<FaceClassifier*> m_detectors;    //
@@ -80,7 +94,8 @@ private:
     int m_rootSpacing;          // The stride size of sliding window for 12-net
     int m_rootWindowSize;       // Should be 12 for cascaded CNN face detection 
     
-    NetConfigs m_configs;              // The settings
+    NetConfigs m_configs;       // The settings
+    int m_batchSize;            // To process a batch of windows simultaneously
 };
 
 #endif	/* FACEDETECTOR_H */

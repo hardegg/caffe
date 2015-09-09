@@ -1,8 +1,8 @@
 name: "FaceCascade_calibration48"
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_c48"
+  top: "data_c48"
+  top: "label_c48"
   type: "ImageData" 
   include {
     phase: TRAIN
@@ -20,9 +20,9 @@ layer {
   }
 }
 layer {
-  name: "data"
-  top: "data"
-  top: "label"
+  name: "data_c48"
+  top: "data_c48"
+  top: "label_c48"
   type: "ImageData"
   include {
     phase: TEST
@@ -39,10 +39,10 @@ layer {
   }
 }
 layer {
-  name: "conv1"
+  name: "conv1_c48"
   type: "Convolution"
-  bottom: "data"
-  top: "conv1"
+  bottom: "data_c48"
+  top: "conv1_c48"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -66,10 +66,10 @@ layer {
   }
 }
 layer {
-  name: "pool1"
+  name: "pool1_c48"
   type: "Pooling"
-  bottom: "conv1"
-  top: "pool1"
+  bottom: "conv1_c48"
+  top: "pool1_c48"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -77,10 +77,10 @@ layer {
   }
 }
 layer {
-  name: "relu1"
+  name: "relu1_c48"
   type: "ReLU"
-  bottom: "pool1"
-  top: "pool1"
+  bottom: "pool1_c48"
+  top: "pool1_c48"
 }
 layer {
     name: "norm1"
@@ -93,10 +93,10 @@ layer {
     }
 }
 layer {
-  name: "conv2"
+  name: "conv2_c48"
   type: "Convolution"
-  bottom: "norm1"
-  top: "conv2"
+  bottom: "norm1_c48"
+  top: "conv2_c48"
   # learning rate and decay multipliers for the filters
   param {
     lr_mult: 1
@@ -120,20 +120,20 @@ layer {
   }
 }
 layer {
-    name: "norm2"
+    name: "norm2_c48"
     type: "LRN"
-    bottom: "conv2"
-    top: "norm2"
+    bottom: "conv2_c48"
+    top: "norm2_c48"
     lrn_param{
         local_size: 9
         norm_region: WITHIN_CHANNEL
     }
 }
 layer {
-  name: "fc1"
+  name: "fc1_c48"
   type: "InnerProduct"
-  bottom: "norm2"
-  top: "fc1"
+  bottom: "norm2_c48"
+  top: "fc1_c48"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -153,10 +153,10 @@ layer {
   }
 }
 layer {
-  name: "relu2"
+  name: "relu2_c48"
   type: "ReLU"
-  bottom: "fc1"
-  top: "fc1"
+  bottom: "fc1_c48"
+  top: "fc1_c48"
 }
 #layer {
 #  name: "drop1"
@@ -168,10 +168,10 @@ layer {
 #  }
 #}
 layer {
-  name: "fc2"
+  name: "fc2_c48"
   type: "InnerProduct"
-  bottom: "fc1"
-  top: "fc2"
+  bottom: "fc1_c48"
+  top: "fc2_c48"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -191,19 +191,19 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
+  name: "accuracy_c48"
   type: "Accuracy"
-  bottom: "fc2"
-  bottom: "label"
-  top: "accuracy"
+  bottom: "fc2_c48"
+  bottom: "label_c48"
+  top: "accuracy_c48"
   include {
     phase: TEST
   }
 }
 layer {
-  name: "loss"
+  name: "loss_c48"
   type: "SoftmaxWithLoss"
-  bottom: "fc2"
-  bottom: "label"
-  top: "loss"
+  bottom: "fc2_c48"
+  bottom: "label_c48"
+  top: "loss_c48"
 }

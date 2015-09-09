@@ -33,7 +33,7 @@ int main(int argc, const char* argv[])
         int c = rng.uniform(0, imgs[idx].cols);
         int s = rng.uniform(0, 2*MIN(MIN(r, imgs[idx].rows-r), MIN(c, imgs[idx].cols-c)) + 1 );
         
-        if (s < 40)
+        if (s < 28)
             continue;
         
         Rect rect = Rect(c-s/2, r-s/2, s, s);

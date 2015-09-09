@@ -5,8 +5,9 @@ message NetConfig_detect {
     required int32 size = 2;
     required string modelFile = 3;
     required string trainedFile = 4;
-    required float threshold = 5;
-    required float nmsOverlap = 6;
+    required string meanImageFile = 5;
+    required float threshold = 6;
+    required float nmsOverlap = 7;
 }
 
 message NetConfig_calib {
@@ -15,6 +16,7 @@ message NetConfig_calib {
     required string modelFile = 3;
     required string trainedFile = 4;
     required float threshold = 5;
+    required string meanImageFile = 6;
 }
 
 message NetConfigs {

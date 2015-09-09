@@ -134,17 +134,29 @@ class NetConfig_detect : public ::google::protobuf::Message {
   inline ::std::string* release_trainedfile();
   inline void set_allocated_trainedfile(::std::string* trainedfile);
 
-  // required float threshold = 5;
+  // required string meanImageFile = 5;
+  inline bool has_meanimagefile() const;
+  inline void clear_meanimagefile();
+  static const int kMeanImageFileFieldNumber = 5;
+  inline const ::std::string& meanimagefile() const;
+  inline void set_meanimagefile(const ::std::string& value);
+  inline void set_meanimagefile(const char* value);
+  inline void set_meanimagefile(const char* value, size_t size);
+  inline ::std::string* mutable_meanimagefile();
+  inline ::std::string* release_meanimagefile();
+  inline void set_allocated_meanimagefile(::std::string* meanimagefile);
+
+  // required float threshold = 6;
   inline bool has_threshold() const;
   inline void clear_threshold();
-  static const int kThresholdFieldNumber = 5;
+  static const int kThresholdFieldNumber = 6;
   inline float threshold() const;
   inline void set_threshold(float value);
 
-  // required float nmsOverlap = 6;
+  // required float nmsOverlap = 7;
   inline bool has_nmsoverlap() const;
   inline void clear_nmsoverlap();
-  static const int kNmsOverlapFieldNumber = 6;
+  static const int kNmsOverlapFieldNumber = 7;
   inline float nmsoverlap() const;
   inline void set_nmsoverlap(float value);
 
@@ -158,6 +170,8 @@ class NetConfig_detect : public ::google::protobuf::Message {
   inline void clear_has_modelfile();
   inline void set_has_trainedfile();
   inline void clear_has_trainedfile();
+  inline void set_has_meanimagefile();
+  inline void clear_has_meanimagefile();
   inline void set_has_threshold();
   inline void clear_has_threshold();
   inline void set_has_nmsoverlap();
@@ -167,13 +181,14 @@ class NetConfig_detect : public ::google::protobuf::Message {
 
   ::std::string* name_;
   ::std::string* modelfile_;
+  ::std::string* trainedfile_;
   ::google::protobuf::int32 size_;
   float threshold_;
-  ::std::string* trainedfile_;
+  ::std::string* meanimagefile_;
   float nmsoverlap_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_config_2eproto();
   friend void protobuf_AssignDesc_config_2eproto();
@@ -288,6 +303,18 @@ class NetConfig_calib : public ::google::protobuf::Message {
   inline float threshold() const;
   inline void set_threshold(float value);
 
+  // required string meanImageFile = 6;
+  inline bool has_meanimagefile() const;
+  inline void clear_meanimagefile();
+  static const int kMeanImageFileFieldNumber = 6;
+  inline const ::std::string& meanimagefile() const;
+  inline void set_meanimagefile(const ::std::string& value);
+  inline void set_meanimagefile(const char* value);
+  inline void set_meanimagefile(const char* value, size_t size);
+  inline ::std::string* mutable_meanimagefile();
+  inline ::std::string* release_meanimagefile();
+  inline void set_allocated_meanimagefile(::std::string* meanimagefile);
+
   // @@protoc_insertion_point(class_scope:NetConfig_calib)
  private:
   inline void set_has_name();
@@ -300,6 +327,8 @@ class NetConfig_calib : public ::google::protobuf::Message {
   inline void clear_has_trainedfile();
   inline void set_has_threshold();
   inline void clear_has_threshold();
+  inline void set_has_meanimagefile();
+  inline void clear_has_meanimagefile();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -308,9 +337,10 @@ class NetConfig_calib : public ::google::protobuf::Message {
   ::google::protobuf::int32 size_;
   float threshold_;
   ::std::string* trainedfile_;
+  ::std::string* meanimagefile_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_config_2eproto();
   friend void protobuf_AssignDesc_config_2eproto();
@@ -681,15 +711,85 @@ inline void NetConfig_detect::set_allocated_trainedfile(::std::string* trainedfi
   }
 }
 
-// required float threshold = 5;
-inline bool NetConfig_detect::has_threshold() const {
+// required string meanImageFile = 5;
+inline bool NetConfig_detect::has_meanimagefile() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void NetConfig_detect::set_has_threshold() {
+inline void NetConfig_detect::set_has_meanimagefile() {
   _has_bits_[0] |= 0x00000010u;
 }
-inline void NetConfig_detect::clear_has_threshold() {
+inline void NetConfig_detect::clear_has_meanimagefile() {
   _has_bits_[0] &= ~0x00000010u;
+}
+inline void NetConfig_detect::clear_meanimagefile() {
+  if (meanimagefile_ != &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_->clear();
+  }
+  clear_has_meanimagefile();
+}
+inline const ::std::string& NetConfig_detect::meanimagefile() const {
+  return *meanimagefile_;
+}
+inline void NetConfig_detect::set_meanimagefile(const ::std::string& value) {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  meanimagefile_->assign(value);
+}
+inline void NetConfig_detect::set_meanimagefile(const char* value) {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  meanimagefile_->assign(value);
+}
+inline void NetConfig_detect::set_meanimagefile(const char* value, size_t size) {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  meanimagefile_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* NetConfig_detect::mutable_meanimagefile() {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  return meanimagefile_;
+}
+inline ::std::string* NetConfig_detect::release_meanimagefile() {
+  clear_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = meanimagefile_;
+    meanimagefile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void NetConfig_detect::set_allocated_meanimagefile(::std::string* meanimagefile) {
+  if (meanimagefile_ != &::google::protobuf::internal::kEmptyString) {
+    delete meanimagefile_;
+  }
+  if (meanimagefile) {
+    set_has_meanimagefile();
+    meanimagefile_ = meanimagefile;
+  } else {
+    clear_has_meanimagefile();
+    meanimagefile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
+}
+
+// required float threshold = 6;
+inline bool NetConfig_detect::has_threshold() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void NetConfig_detect::set_has_threshold() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void NetConfig_detect::clear_has_threshold() {
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void NetConfig_detect::clear_threshold() {
   threshold_ = 0;
@@ -703,15 +803,15 @@ inline void NetConfig_detect::set_threshold(float value) {
   threshold_ = value;
 }
 
-// required float nmsOverlap = 6;
+// required float nmsOverlap = 7;
 inline bool NetConfig_detect::has_nmsoverlap() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void NetConfig_detect::set_has_nmsoverlap() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void NetConfig_detect::clear_has_nmsoverlap() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void NetConfig_detect::clear_nmsoverlap() {
   nmsoverlap_ = 0;
@@ -981,6 +1081,76 @@ inline float NetConfig_calib::threshold() const {
 inline void NetConfig_calib::set_threshold(float value) {
   set_has_threshold();
   threshold_ = value;
+}
+
+// required string meanImageFile = 6;
+inline bool NetConfig_calib::has_meanimagefile() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void NetConfig_calib::set_has_meanimagefile() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void NetConfig_calib::clear_has_meanimagefile() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void NetConfig_calib::clear_meanimagefile() {
+  if (meanimagefile_ != &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_->clear();
+  }
+  clear_has_meanimagefile();
+}
+inline const ::std::string& NetConfig_calib::meanimagefile() const {
+  return *meanimagefile_;
+}
+inline void NetConfig_calib::set_meanimagefile(const ::std::string& value) {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  meanimagefile_->assign(value);
+}
+inline void NetConfig_calib::set_meanimagefile(const char* value) {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  meanimagefile_->assign(value);
+}
+inline void NetConfig_calib::set_meanimagefile(const char* value, size_t size) {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  meanimagefile_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* NetConfig_calib::mutable_meanimagefile() {
+  set_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    meanimagefile_ = new ::std::string;
+  }
+  return meanimagefile_;
+}
+inline ::std::string* NetConfig_calib::release_meanimagefile() {
+  clear_has_meanimagefile();
+  if (meanimagefile_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = meanimagefile_;
+    meanimagefile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void NetConfig_calib::set_allocated_meanimagefile(::std::string* meanimagefile) {
+  if (meanimagefile_ != &::google::protobuf::internal::kEmptyString) {
+    delete meanimagefile_;
+  }
+  if (meanimagefile) {
+    set_has_meanimagefile();
+    meanimagefile_ = meanimagefile;
+  } else {
+    clear_has_meanimagefile();
+    meanimagefile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
 }
 
 // -------------------------------------------------------------------

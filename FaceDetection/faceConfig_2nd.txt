@@ -1,0 +1,53 @@
+modelFolder:"/home/fanglin/caffe/FaceDetection/models/deploy"
+globalNmsOverlap: 0.5
+detectNet{
+    name: "12-net"
+    size: 12 #width and height
+    modelFile: "deploy_detection12.prototxt"
+    trainedFile: "facecascade_detection12_train_iter_59000.caffemodel"
+    meanImageFile: "12net_mean_const128.binaryproto"
+    threshold: 0.0907706 #0.03679
+    nmsOverlap: 0.9
+}
+calibNet{
+    name: "12-calib"
+    size: 12 #width and height
+    modelFile: "deploy_calibration12.prototxt"
+    trainedFile: "facecascade_calibration12_train_iter_600000.caffemodel"
+    meanImageFile: "12net_mean_const128.binaryproto"
+    threshold: 0.05
+}
+detectNet{
+    name: "24-net"
+    size: 24 #width and height
+    modelFile: "deploy_detection24.prototxt"
+    trainedFile: "facecascade_detection24_train_iter_799000.caffemodel"
+    meanImageFile: "24net_mean_const128.binaryproto"
+    threshold: 0.0001
+    nmsOverlap: 0.75
+}
+calibNet{
+    name: "24-calib"
+    size: 24 #width and height
+    modelFile: "deploy_calibration24.prototxt"
+    trainedFile: "facecascade_calibration24_train_iter_660000.caffemodel"
+    meanImageFile: "24net_mean_const0.binaryproto"
+    threshold: 0.01
+}
+#detectNet{
+#    name: "48-net"
+#    size: 48 #width and height
+#    modelFile: "deploy_detection48.prototxt"
+#    trainedFile: "facecascade_detection48_train_iter_500000.caffemodel"
+#    meanImageFile: "48net_mean_const128.binaryproto"
+#    threshold: 0.2
+#    nmsOverlap: 0.75
+#}
+#calibNet{
+#    name: "48-calib"
+#    size: 48 #width and height
+#    modelFile: "deploy_calibration48.prototxt"
+#    trainedFile: "facecascade_calibration48_train_iter_450000.caffemodel"
+#    meanImageFile: "12net_mean_const128.binaryproto"
+#    threshold: 0.01
+#}

@@ -57,39 +57,12 @@ int main(int argc, const char* argv[])
     GenerateCalibLabelSet();
     string folderName = "/media/ssd/data/VOC2007/nonPerson";
     string oFolder = "/media/ssd/data/aflw/data/neg48x48";
-    string listFolder = "/media/ssd/data/aflw/data";
-    
-    string model_file_d12, trained_file_d12;
-    model_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection12.prototxt";
-    trained_file_d12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection12_train_iter_298000.caffemodel";
-    string model_file_c12, trained_file_c12;
-    model_file_c12 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration12.prototxt";
-    trained_file_c12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration12_train_iter_410000.caffemodel";
-    string model_file_d24, trained_file_d24;
-    model_file_d24 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection24.prototxt";
-    trained_file_d24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_train_iter_500000.caffemodel";
-    string model_file_c24, trained_file_c24;
-    model_file_c24 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration24.prototxt";
-    trained_file_c24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration24_train_iter_450000.caffemodel";
-  
-    vector<string> modelFiles_detect, trainedFiles_detect;
-    vector<string> modelFiles_calib, trainedFiles_calib;
-    
-    modelFiles_detect.push_back(model_file_d12);
-    modelFiles_detect.push_back(model_file_d24);  
-    trainedFiles_detect.push_back(trained_file_d12);
-    trainedFiles_detect.push_back(trained_file_d24);
-    
-    modelFiles_calib.push_back(model_file_c12);
-    //modelFiles_calib.push_back(model_file_c24);  
-    trainedFiles_calib.push_back(trained_file_c12);
-    //trainedFiles_calib.push_back(trained_file_c24);
+    string listFolder = "/media/ssd/data/aflw/data";   
     
     int min_FaceSize; float scaleStep; int spacing;
-    min_FaceSize = 24; scaleStep = 1.1; spacing = 2;
+    min_FaceSize = 28; scaleStep = 1.1; spacing = 4;
     FaceDetector facedetector(min_FaceSize, scaleStep, spacing);
-    facedetector.SetDetectors(modelFiles_detect, trainedFiles_detect);
-    facedetector.SetCalibrators(modelFiles_calib, trainedFiles_calib);
+    facedetector.LoadConfigs("/home/fanglin/caffe/FaceDetection/faceConfig_2nd.txt");
     
     
     vector<string> filePaths;
@@ -105,17 +78,20 @@ int main(int argc, const char* argv[])
     cout << imgs.size() << " images!" << endl;
     */
 
-    folderName = "/media/ssd/data/VOC2007/nonPerson";
-    //folderName = "/media/ssd/data/WuJX/SkinColor/nonFaces";
-
-    GetFilePaths(folderName, ".jpg", filePaths);
+    vector<string> folderNames;
+    folderNames.push_back("/media/ssd/data/VOC2007/nonPerson");
+    folderNames.push_back("/media/ssd/data/WuJX/SkinColor/nonFaces");
+    folderNames.push_back("/media/ssd/data/WuJX/SkinColor/personHeadMasked");
+    
     vector<Mat> imgs;    
-    int oldSize = imgs.size();
-    //imgs.resize(oldSize+filePaths.size());
-    for (size_t i = 0; i < filePaths.size(); i++) {
-        Mat img = imread(filePaths[i]);
-        if (!img.empty())
-            imgs.push_back(img);
+    for (int k = 0; k < folderNames.size(); k++) {
+        folderName = folderNames[k];
+        GetFilePaths(folderName, ".jpg|.JPG", filePaths);       
+        for (size_t i = 0; i < filePaths.size(); i++) {
+            Mat img = imread(filePaths[i]);
+            if (!img.empty())
+                imgs.push_back(img);
+        }
     }
     cout << imgs.size() << " images!" << endl;
     
@@ -126,7 +102,6 @@ int main(int argc, const char* argv[])
     long long nDetected = 0;
     g_nImages = imgs.size();
     
-    ThreadManager threadManager;
     tic();
     for (int i = 0; i < g_nImages; i++) {
         toc();

@@ -10,7 +10,7 @@ layer {
   transform_param {
     mirror: false  # WARNING: never use mirroring for calibration
     crop_size: 12
-    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto"
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const0.binaryproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration12_train.txt"
@@ -31,7 +31,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 12
-    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto"
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const0.binaryproto"
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration12_val.txt"

@@ -10,6 +10,8 @@ layer {
   transform_param {
     mirror: false  # WARNING: never use mirroring for calibration
     crop_size: 24
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const0.binaryproto"   
+    #scale: 0.00390625
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration24_train.txt"
@@ -30,6 +32,8 @@ layer {
   transform_param {
     mirror: false
     crop_size: 24
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const0.binaryproto"   
+    #scale: 0.00390625
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration24_val.txt"

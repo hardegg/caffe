@@ -59,14 +59,7 @@ int main(int argc, char** argv) {
         nTotalWindows += nWs;
         nDetected += rects.size();
         
-        for (int i = 0; i < rects.size(); i++) {
-            // Expand by 20% vertically
-            //rects[i].y -= rects[i].height*0.1;           
-            //rects[i].height *= 1.2;
-            
-//            rects[i].x += 0.1*rects[i].width;
-//            rects[i].y -= 0.05*rects[i].height;
-//            rects[i].width *= 0.8;
+        for (int i = 0; i < rects.size(); i++) {           
             AFLWRect2FDDB(rects[i]);
             cv::rectangle(img, rects[i], CV_RGB(255, 0, 0), 2);            
         }
@@ -80,10 +73,10 @@ int main(int argc, char** argv) {
         }
         
         
-        //imshow("img", img);
-        char c = cv::waitKey(1);
-        if (c == 'q')
-            break;
+//        imshow("img", img);
+//        char c = cv::waitKey(0);
+//        if (c == 'q')
+//            break;
         toc();
     }
     

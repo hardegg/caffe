@@ -12,27 +12,44 @@ int main(int argc, const char* argv[])
     ::google::InitGoogleLogging(argv[0]);
     //Caffe::set_mode(Caffe::CPU);
     bool BATCH = true;
+    int net = 24;
+    float threshold = 0.99;
     
-    string model_file_d12, trained_file_d12, mean_file_d12;
-    model_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection12.prototxt";
-    trained_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy/facecascade_detection12_train_iter_66000.caffemodel";
-    mean_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto";
+    string model_file, trained_file, mean_file;
+    vector<string> mean_files;
+    string listFilepath;
+    if (net == 12) {
+        threshold = 0.99;
+        model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection12.prototxt";
+        trained_file = "/home/fanglin/caffe/FaceDetection/models/deploy/facecascade_detection12_train_iter_59000.caffemodel";
+        mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto";
+        listFilepath = "/media/ssd/data/aflw/data/faces/detection12_val_noflip.txt";
+    }
     
-    
-    FaceClassifier detector_12(model_file_d12, trained_file_d12, mean_file_d12);
-    
-    string model_file_d24, trained_file_d24;
-    model_file_d24 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection24.prototxt";
-    trained_file_d24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_train_iter_500000.caffemodel";
-    //FaceClassifier detector_24(model_file_d24, trained_file_d24);
+    if (net == 24) {
+        threshold = 0.97;
+        model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection24_with12.prototxt";
+        trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_with12_train_iter_39000.caffemodel";
+        mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const128.binaryproto";
+        listFilepath = "/media/ssd/data/aflw/data/faces/detection24_val_noflip.txt";
+        //listFilepath = "/media/ssd/data/aflw/data/neg24_val.txt";
 
+        mean_files.push_back("/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto");
+        mean_files.push_back(mean_file);
+    }
     
-    string model_file_d48, trained_file_d48;
-    model_file_d48 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection48.prototxt";
-    trained_file_d48 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection48_train_iter_470000.caffemodel";
-    //FaceClassifier detector_48(model_file_d48, trained_file_d12);
+    if (net == 48) {
+        threshold = 0.97;
+        model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection48.prototxt";
+        trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection48_train_iter_59000.caffemodel";
+        mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_const128.binaryproto";
+        listFilepath = "/media/ssd/data/aflw/data/faces/detection48_val_noflip.txt";
+    }
     
-    string listFilepath = "/media/ssd/data/aflw/data/faces/detection12_val.txt";
+    
+    FaceClassifier detector(model_file, trained_file, mean_files);  
+    
+    
     //string listFilepath = "/media/ssd/data/aflw/data/neg48_train.txt";
 
     
@@ -49,7 +66,8 @@ int main(int argc, const char* argv[])
         string filepath =  line.substr(0, line.find(' '));
         Mat img = imread(filepath);
         Mat rsz;
-        cv::resize(img, rsz, Size(12, 12));
+        cv::resize(img, rsz, Size(net, net));
+        
         img = rsz;
         if (img.empty())
             break;
@@ -57,16 +75,18 @@ int main(int argc, const char* argv[])
             imgs.push_back(img);
             std::vector<float> dscores;
             if ((nImages+1) % batchSize == 0) {           
-                dscores  = detector_12.Predict(imgs);            
+                dscores  = detector.Predict(imgs);            
                 for (int i = 0; i < imgs.size(); i++) {
-                    if (dscores[2*i+1] > dscores[2*i])
+                    if (dscores[2*i+1] > dscores[2*i]) {
+                        //cout << dscores[2*i+1] << ", " << dscores[2*i] << endl;
                         ++nCorrect;
+                    }
                     scores.push_back(dscores[2*i+1]);                   
                 }
                imgs.clear();
             }
         } else {
-            vector<float> dscores  = detector_12.Predict(img);
+            vector<float> dscores  = detector.Predict(img);
             //vector<Prediction> prdct = detector_12.Classify(img);
 
             //if (prdct[0].first == 1)
@@ -87,7 +107,7 @@ int main(int argc, const char* argv[])
     
     // Process the left images
     if (BATCH & imgs.size() > 0) {
-        vector<float> dscores  = detector_12.Predict(imgs);
+        vector<float> dscores  = detector.Predict(imgs);
             
         for (int i = 0; i < imgs.size(); i++) {
             if (dscores[2*i+1] > dscores[2*i])
@@ -97,10 +117,10 @@ int main(int argc, const char* argv[])
     }
     
     std::sort(scores.begin(), scores.end());
-    float threshold = 0.99;
+    
     int pos = (1-threshold)*scores.size();
     cout << nImages << " images" << endl;
     cout << "accuracy = " << 1.0*nCorrect/nImages << endl;
-    cout << "threshold = " << scores[pos] << endl;
+    cout << "threshold = " << scores[pos] << " for recall " << threshold << endl;
     return 0;
 }

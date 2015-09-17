@@ -27,7 +27,7 @@ void GenerateConstantMean(int width, int height, int nChannels, float value, con
     mean_blob.set_width(width);
     int size_in_datum = nChannels * width * height;
     for (int i = 0; i < size_in_datum; ++i) {
-        mean_blob.add_data(128.);
+        mean_blob.add_data(value);
     }
     WriteProtoToBinaryFile(mean_blob, filepath); 
 }
@@ -35,7 +35,7 @@ void GenerateConstantMean(int width, int height, int nChannels, float value, con
 int main(int argc, const char *argv[])
 {
     string filepath = "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto";
-   
+    GenerateConstantMean(12, 12, 3, 128.0, filepath);
        
     return 0;
 }

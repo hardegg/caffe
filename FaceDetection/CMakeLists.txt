@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 project( test )
 find_package( OpenCV REQUIRED )
 add_executable( test main.cpp )
@@ -23,11 +23,11 @@ find_package( Boost 1.58 COMPONENTS filesystem system thread program_options REQ
 add_executable(RunFDDB RunFDDB.cpp FaceDetector.cpp FaceClassifier.cpp utilities_common.cpp config.pb.cc)
 target_link_libraries(RunFDDB ${Caffe_LINK} ${OpenCV_LIBS} ${Boost_LIBRARIES})
 
-project(GetThesholdFor12net)
+project(GetThesholdForNet)
 find_package( OpenCV REQUIRED )
 find_package( Boost 1.58 COMPONENTS filesystem system thread program_options REQUIRED )
-add_executable(GetThesholdFor12net GetThesholdFor12net.cpp FaceClassifier.cpp utilities_common.cpp config.pb.cc)
-target_link_libraries(GetThesholdFor12net ${Caffe_LINK} ${OpenCV_LIBS} ${Boost_LIBRARIES})
+add_executable(GetThesholdForNet GetThesholdForNet.cpp FaceClassifier.cpp utilities_common.cpp config.pb.cc)
+target_link_libraries(GetThesholdForNet ${Caffe_LINK} ${OpenCV_LIBS} ${Boost_LIBRARIES})
 
 project(Gen24netNeg)
 find_package( OpenCV REQUIRED )

@@ -14,7 +14,7 @@ layer {
 
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/train_detection24.txt"
+    source: "/media/ssd/data/aflw/data/train_detection24_noflip.txt"
     shuffle: true
     new_height:24
     new_width:24
@@ -35,7 +35,7 @@ layer {
     mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const128.binaryproto"
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/faces/detection24_val.txt"
+    source: "/media/ssd/data/aflw/data/faces/detection24_val_noflip.txt"
     new_height:24
     new_width:24
     batch_size: 50
@@ -83,7 +83,7 @@ layer {
   name: "relu1_d24"
   type: "ReLU"
   bottom: "pool1_d24"
-  top: "pool1_24"
+  top: "pool1_d24"
 }
 layer {
   name: "fc1_d24"

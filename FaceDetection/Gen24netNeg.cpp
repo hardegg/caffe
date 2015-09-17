@@ -17,32 +17,28 @@ int main(int argc, const char* argv[])
     string oFolder = "/media/ssd/data/aflw/data/neg24x24";
     string listFolder = "/media/ssd/data/aflw/data";
     
-    string model_file_d12, trained_file_d12;
-    model_file_d12 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection12.prototxt";
-    trained_file_d12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection12_train_iter_298000.caffemodel";
-    string model_file_c12, trained_file_c12;
-    model_file_c12 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration12.prototxt";
-    trained_file_c12 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration12_train_iter_410000.caffemodel";
-    string model_file_d24, trained_file_d24;
-    model_file_d24 = "/home/fanglin/caffe/FaceDetection/models/deploy_detection24.prototxt";
-    trained_file_d24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_train_iter_500000.caffemodel";
-    string model_file_c24, trained_file_c24;
-    model_file_c24 = "/home/fanglin/caffe/FaceDetection/models/deploy_calibration24.prototxt";
-    trained_file_c24 = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_calibration24_train_iter_450000.caffemodel";
+    int min_FaceSize; float scaleStep; int spacing;
+    min_FaceSize = 28; scaleStep = 1.1; spacing = 4;
+    FaceDetector facedetector(min_FaceSize, scaleStep, spacing);
+    facedetector.LoadConfigs("/home/fanglin/caffe/FaceDetection/faceConfig_2nd.txt");
     
-    FaceClassifier detector_12(model_file_d12, trained_file_d12);    
-    FaceClassifier calibrator_12(model_file_c12, trained_file_c12);
-    FaceClassifier detector_24(model_file_d24, trained_file_d24);
-    FaceClassifier calibrator_24(model_file_c24, trained_file_c24);
+    vector<string> folderNames;
+    folderNames.push_back("/media/ssd/data/VOC2007/nonPerson");
+    folderNames.push_back("/media/ssd/data/WuJX/SkinColor/personHeadMasked");
     
-    
-    vector<string> filePaths;
-    GetFilePaths(folderName, ".jpg", filePaths);
-    vector<Mat> imgs(filePaths.size());
-    for (size_t i = 0; i < filePaths.size(); i++) {
-        imgs[i] = imread(filePaths[i]);
+    vector<Mat> imgs;    
+
+    for (int k = 0; k < folderNames.size(); k++) {
+        folderName = folderNames[k];
+        vector<string> filePaths;
+        GetFilePaths(folderName, ".jpg|.JPG", filePaths);
+        //imgs.resize(oldSize+filePaths.size());
+        for (size_t i = 0; i < filePaths.size(); i++) {
+            Mat img = imread(filePaths[i]);
+            if (!img.empty())
+                imgs.push_back(img);
+        }
     }
-    cout << imgs.size() << " images!" << endl;
     
     ofstream negTrListPath(string(listFolder+"/neg24_train.txt").c_str());
     ofstream negValListPath(string(listFolder+"/neg24_val.txt").c_str());
@@ -54,20 +50,34 @@ int main(int argc, const char* argv[])
         vector<Rect> rects;
         vector<float> scores;
         tic();
-        int nWs = FaceDetection(img, detector_12, detector_24, calibrator_12, calibrator_24, rects, scores);
-                     
+        int nWs = facedetector.Detect(img, rects, scores);
+        
+        cout << "Total sliding windows " << nWs << endl;
+        cout << "Detected faces " << rects.size() << endl; 
+        
+        
+        Mat img_ext;
+        Size extSize(img.cols/2, img.rows/2);        
+        cv::copyMakeBorder(img, img_ext, extSize.height, extSize.height, 
+        extSize.width, extSize.width, BORDER_REPLICATE, CV_RGB(0,0,0));
+    
         for (int j = 0; j < rects.size(); j++) {
             Mat rsz, patch;
+            Rect rect_ext = rects[j];
+            rect_ext.x += extSize.width;
+            rect_ext.y += extSize.height;      
+            /*
             if (rects[j].x < 0 || rects[j].y < 0 || 
                     rects[j].br().x > img.cols -1 || rects[j].br().y > img.rows -1)
                 continue;
-            patch = img(rects[j]);
+             */
+            patch = img_ext(rect_ext);
 
             cv::resize(patch, rsz, cv::Size(24, 24));
             stringstream ss;
             ss << oFolder << "/neg_24x24_" << i << "_" << j << ".bmp";
             imwrite(ss.str(), rsz);
-            if (imgs.size() -i > 500)
+            if (imgs.size() -i > 100)
                 negTrListPath << ss.str() << " " << 0 << endl;
             else
                 negValListPath << ss.str() << " " << 0 << endl;
@@ -89,5 +99,6 @@ int main(int argc, const char* argv[])
     negValListPath.close();
     
     cout << "Total negatives: " << nDetected << endl;
+    cout << "Average faces per image " << 1.0*nDetected/imgs.size() << endl;
     return 0;
 }

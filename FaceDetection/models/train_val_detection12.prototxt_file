@@ -8,7 +8,7 @@ layer {
     phase: TRAIN
   }
   transform_param {
-    mirror: false #NOTE: we have flipped faces during sample generation
+    mirror: true #NOTE: we have flipped faces during sample generation
     crop_size: 12
     mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto"
   }

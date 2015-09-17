@@ -49,11 +49,11 @@ class FaceDetector
 //    };
     
 public:
-    FaceDetector():m_minFaceSize(32), m_scaleStep(1.118f), m_rootSpacing(4),m_rootWindowSize(12), m_batchSize(4)
+    FaceDetector():m_minFaceSize(32), m_scaleStep(1.18f), m_rootSpacing(4),m_rootWindowSize(12), m_batchSize(256)
     {
         GenerateCalibLabelSet();
     }
-    FaceDetector(int min_FaceSize, float scaleStep, int spacing):m_minFaceSize(min_FaceSize),m_scaleStep(scaleStep), m_rootSpacing(spacing),m_rootWindowSize(12), , m_batchSize(4)
+    FaceDetector(int min_FaceSize, float scaleStep, int spacing):m_minFaceSize(min_FaceSize),m_scaleStep(scaleStep), m_rootSpacing(spacing),m_rootWindowSize(12), m_batchSize(256)
     {
         GenerateCalibLabelSet();
     }
@@ -63,27 +63,19 @@ public:
     void SetBatchSize(int batchSize) { m_batchSize = batchSize; }
     void LoadConfigs(const string& protoFilepath);
     void SetDetectors(const NetConfigs& configs);
-    void SetCalibrators(const NetConfigs& configs);
-    void SetDetectors(const vector<string>& modelFiles, const vector<string>& trainedFiles)
-    {
-        SetClassifiers(modelFiles, trainedFiles, m_detectors);
-    }
-    void SetCalibrators(const vector<string>& modelFiles, const vector<string>& trainedFiles)
-    {
-        SetClassifiers(modelFiles, trainedFiles, m_calibrators);
-    }
-    
+    void SetCalibrators(const NetConfigs& configs);    
     int GetSlidingWindows(const Mat& img, vector<Rect>& rects, vector<float>& scores);
 
     
     int Detect(const Mat& img, vector<Rect>& rects, vector<float>& scores);
 private:
     void DetectRects(const Mat& img_ext, const Size& extSize, FaceClassifier* detector, const NetConfig_detect& config, vector<Rect>& rects, vector<float>& scores);
-    void CalibrateRects(const Mat& img_ext, const Size& extSize, FaceClassifier* calibrator, FaceClassifier* detector, const NetConfig_calib& config_c, const NetConfig_detect& config_d, vector<Rect>& rects, vector<float>& scores);
+    void DetectRects_batch(const Mat& img_ext, const Size& extSize, FaceClassifier* detector, const NetConfig_detect& config, vector<Rect>& rects, vector<float>& scores);
 
+    void CalibrateRects(const Mat& img_ext, const Size& extSize, FaceClassifier* calibrator, FaceClassifier* detector, const NetConfig_calib& config_c, const NetConfig_detect& config_d, vector<Rect>& rects, vector<float>& scores);
+    void CalibrateRects_batch(const Mat& img_ext, const Size& extSize, FaceClassifier* calibrator, FaceClassifier* detector, const NetConfig_calib& config_c, const NetConfig_detect& config_d, vector<Rect>& rects, vector<float>& scores);
     
-    void SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, vector<FaceClassifier*>& classifiers);
-    void SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, const vector<string>& meanImageFiles, vector<FaceClassifier*>& classifiers);
+    void SetClassifiers(const vector<string>& modelFiles, const vector<string>& trainedFiles, const vector<vector<string> >& meanImageFiles, vector<FaceClassifier*>& classifiers);
 
     
 private:

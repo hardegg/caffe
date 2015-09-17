@@ -10,6 +10,7 @@ layer {
   transform_param {
     mirror: false  # WARNING: never use mirroring for calibration
     crop_size: 48
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_const0.binaryproto"   
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration48_train.txt"
@@ -30,6 +31,7 @@ layer {
   transform_param {
     mirror: false
     crop_size: 48
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_const0.binaryproto"   
   }
   image_data_param {
     source: "/media/ssd/data/aflw/data/faces/calibration48_val.txt"
@@ -83,10 +85,10 @@ layer {
   top: "pool1_c48"
 }
 layer {
-    name: "norm1"
+    name: "norm1_c48"
     type: "LRN"
-    bottom: "pool1"
-    top: "norm1"
+    bottom: "pool1_c48"
+    top: "norm1_c48"
     lrn_param{
         local_size: 9
         norm_region: WITHIN_CHANNEL

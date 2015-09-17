@@ -28,34 +28,37 @@ typedef std::pair<int, float> Prediction;
 
 class FaceClassifier {
  public:
-  FaceClassifier(const string& model_file,
+  // For multi-resolution
+  explicit FaceClassifier(const string& model_file,
              const string& trained_file,
-             const string& mean_file = "");
+             const vector<string>& mean_files);
+  explicit FaceClassifier(const string& model_file,
+             const string& trained_file,
+             const string& mean_file);
 
   std::vector<Prediction> Classify(const cv::Mat& img, int N = 1);
   std::vector<float> Predict(const cv::Mat& img);
   std::vector<float> Predict(const vector<cv::Mat>& imgs);
+  int GetLabelDim();
 
  private:
-  void SetMean(const string& mean_file);
-  
-  /* In case of now mean image. Set mean image to zero. */
-  void SetMean(void); 
-
- 
-
-  void WrapInputLayer(std::vector<cv::Mat>* input_channels);
-  void WrapInputLayer(std::vector<cv::Mat>* input_channels, int batchSize);
+  void Initialize(const string& model_file,
+             const string& trained_file,
+             const vector<string>& mean_files);
+  void SetMean(const string& mean_file, cv::Size input_geometry, Mat& outmean);
+  void WrapInputLayer(std::vector<cv::Mat>* input_channels, int batchSize = 1, int iInput = 0);
   void Preprocess(const vector<cv::Mat>& imgs,
-                  std::vector<cv::Mat>* input_channels);    
-  void Preprocess(const cv::Mat& img,
-                  std::vector<cv::Mat>* input_channels);
+                  std::vector<cv::Mat>* input_channels, cv::Size input_geometry, const Mat& meanImage);      
 
  private:
   shared_ptr<Net<float> > net_;
-  cv::Size input_geometry_;
-  int num_channels_;
-  cv::Mat mean_; 
+  // support multi resolution when using multi-resolution
+  vector<cv::Mat> means_; 
+  vector<cv::Size> input_geometries_;
+  vector<int> num_channels_;
+  int   num_resos_;
+
+
 };
 
 #endif	/* FACECLASSIFIER_H */

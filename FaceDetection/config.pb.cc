@@ -38,14 +38,15 @@ void protobuf_AssignDesc_config_2eproto() {
       "config.proto");
   GOOGLE_CHECK(file != NULL);
   NetConfig_detect_descriptor_ = file->message_type(0);
-  static const int NetConfig_detect_offsets_[7] = {
+  static const int NetConfig_detect_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, modelfile_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, trainedfile_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, meanimagefile_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, threshold_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, nmsoverlap_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, meanimagefile_1_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_detect, meanimagefile_2_),
   };
   NetConfig_detect_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -59,13 +60,14 @@ void protobuf_AssignDesc_config_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(NetConfig_detect));
   NetConfig_calib_descriptor_ = file->message_type(1);
-  static const int NetConfig_calib_offsets_[6] = {
+  static const int NetConfig_calib_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_calib, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_calib, size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_calib, modelfile_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_calib, trainedfile_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_calib, threshold_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_calib, meanimagefile_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NetConfig_calib, nmsoverlap_),
   };
   NetConfig_calib_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -134,17 +136,19 @@ void protobuf_AddDesc_config_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\014config.proto\"\224\001\n\020NetConfig_detect\022\014\n\004n"
+    "\n\014config.proto\"\262\001\n\020NetConfig_detect\022\014\n\004n"
     "ame\030\001 \001(\t\022\014\n\004size\030\002 \002(\005\022\021\n\tmodelFile\030\003 \002"
     "(\t\022\023\n\013trainedFile\030\004 \002(\t\022\025\n\rmeanImageFile"
-    "\030\005 \002(\t\022\021\n\tthreshold\030\006 \002(\002\022\022\n\nnmsOverlap\030"
-    "\007 \002(\002\"\177\n\017NetConfig_calib\022\014\n\004name\030\001 \001(\t\022\014"
-    "\n\004size\030\002 \002(\005\022\021\n\tmodelFile\030\003 \002(\t\022\023\n\013train"
-    "edFile\030\004 \002(\t\022\021\n\tthreshold\030\005 \002(\002\022\025\n\rmeanI"
-    "mageFile\030\006 \002(\t\"\205\001\n\nNetConfigs\022\023\n\013modelFo"
-    "lder\030\001 \002(\t\022\030\n\020globalNmsOverlap\030\002 \002(\002\022$\n\t"
-    "detectNet\030\003 \003(\0132\021.NetConfig_detect\022\"\n\010ca"
-    "libNet\030\004 \003(\0132\020.NetConfig_calib", 430);
+    "\030\005 \002(\t\022\021\n\tthreshold\030\006 \002(\002\022\027\n\017meanImageFi"
+    "le_1\030\007 \001(\t\022\027\n\017meanImageFile_2\030\010 \001(\t\"\223\001\n\017"
+    "NetConfig_calib\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 "
+    "\002(\005\022\021\n\tmodelFile\030\003 \002(\t\022\023\n\013trainedFile\030\004 "
+    "\002(\t\022\021\n\tthreshold\030\005 \002(\002\022\025\n\rmeanImageFile\030"
+    "\006 \002(\t\022\022\n\nnmsOverlap\030\007 \002(\002\"\205\001\n\nNetConfigs"
+    "\022\023\n\013modelFolder\030\001 \002(\t\022\030\n\020globalNmsOverla"
+    "p\030\002 \002(\002\022$\n\tdetectNet\030\003 \003(\0132\021.NetConfig_d"
+    "etect\022\"\n\010calibNet\030\004 \003(\0132\020.NetConfig_cali"
+    "b", 481);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "config.proto", &protobuf_RegisterTypes);
   NetConfig_detect::default_instance_ = new NetConfig_detect();
@@ -172,7 +176,8 @@ const int NetConfig_detect::kModelFileFieldNumber;
 const int NetConfig_detect::kTrainedFileFieldNumber;
 const int NetConfig_detect::kMeanImageFileFieldNumber;
 const int NetConfig_detect::kThresholdFieldNumber;
-const int NetConfig_detect::kNmsOverlapFieldNumber;
+const int NetConfig_detect::kMeanImageFile1FieldNumber;
+const int NetConfig_detect::kMeanImageFile2FieldNumber;
 #endif  // !_MSC_VER
 
 NetConfig_detect::NetConfig_detect()
@@ -197,7 +202,8 @@ void NetConfig_detect::SharedCtor() {
   trainedfile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   meanimagefile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   threshold_ = 0;
-  nmsoverlap_ = 0;
+  meanimagefile_1_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  meanimagefile_2_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -217,6 +223,12 @@ void NetConfig_detect::SharedDtor() {
   }
   if (meanimagefile_ != &::google::protobuf::internal::kEmptyString) {
     delete meanimagefile_;
+  }
+  if (meanimagefile_1_ != &::google::protobuf::internal::kEmptyString) {
+    delete meanimagefile_1_;
+  }
+  if (meanimagefile_2_ != &::google::protobuf::internal::kEmptyString) {
+    delete meanimagefile_2_;
   }
   if (this != default_instance_) {
   }
@@ -267,7 +279,16 @@ void NetConfig_detect::Clear() {
       }
     }
     threshold_ = 0;
-    nmsoverlap_ = 0;
+    if (has_meanimagefile_1()) {
+      if (meanimagefile_1_ != &::google::protobuf::internal::kEmptyString) {
+        meanimagefile_1_->clear();
+      }
+    }
+    if (has_meanimagefile_2()) {
+      if (meanimagefile_2_ != &::google::protobuf::internal::kEmptyString) {
+        meanimagefile_2_->clear();
+      }
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -374,19 +395,37 @@ bool NetConfig_detect::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(61)) goto parse_nmsOverlap;
+        if (input->ExpectTag(58)) goto parse_meanImageFile_1;
         break;
       }
 
-      // required float nmsOverlap = 7;
+      // optional string meanImageFile_1 = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
-         parse_nmsOverlap:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
-                 input, &nmsoverlap_)));
-          set_has_nmsoverlap();
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_meanImageFile_1:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_meanimagefile_1()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->meanimagefile_1().data(), this->meanimagefile_1().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(66)) goto parse_meanImageFile_2;
+        break;
+      }
+
+      // optional string meanImageFile_2 = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_meanImageFile_2:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_meanimagefile_2()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->meanimagefile_2().data(), this->meanimagefile_2().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -458,9 +497,22 @@ void NetConfig_detect::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteFloat(6, this->threshold(), output);
   }
 
-  // required float nmsOverlap = 7;
-  if (has_nmsoverlap()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(7, this->nmsoverlap(), output);
+  // optional string meanImageFile_1 = 7;
+  if (has_meanimagefile_1()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->meanimagefile_1().data(), this->meanimagefile_1().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      7, this->meanimagefile_1(), output);
+  }
+
+  // optional string meanImageFile_2 = 8;
+  if (has_meanimagefile_2()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->meanimagefile_2().data(), this->meanimagefile_2().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      8, this->meanimagefile_2(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -521,9 +573,24 @@ void NetConfig_detect::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(6, this->threshold(), target);
   }
 
-  // required float nmsOverlap = 7;
-  if (has_nmsoverlap()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(7, this->nmsoverlap(), target);
+  // optional string meanImageFile_1 = 7;
+  if (has_meanimagefile_1()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->meanimagefile_1().data(), this->meanimagefile_1().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        7, this->meanimagefile_1(), target);
+  }
+
+  // optional string meanImageFile_2 = 8;
+  if (has_meanimagefile_2()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->meanimagefile_2().data(), this->meanimagefile_2().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        8, this->meanimagefile_2(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -577,9 +644,18 @@ int NetConfig_detect::ByteSize() const {
       total_size += 1 + 4;
     }
 
-    // required float nmsOverlap = 7;
-    if (has_nmsoverlap()) {
-      total_size += 1 + 4;
+    // optional string meanImageFile_1 = 7;
+    if (has_meanimagefile_1()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->meanimagefile_1());
+    }
+
+    // optional string meanImageFile_2 = 8;
+    if (has_meanimagefile_2()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->meanimagefile_2());
     }
 
   }
@@ -627,8 +703,11 @@ void NetConfig_detect::MergeFrom(const NetConfig_detect& from) {
     if (from.has_threshold()) {
       set_threshold(from.threshold());
     }
-    if (from.has_nmsoverlap()) {
-      set_nmsoverlap(from.nmsoverlap());
+    if (from.has_meanimagefile_1()) {
+      set_meanimagefile_1(from.meanimagefile_1());
+    }
+    if (from.has_meanimagefile_2()) {
+      set_meanimagefile_2(from.meanimagefile_2());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -647,7 +726,7 @@ void NetConfig_detect::CopyFrom(const NetConfig_detect& from) {
 }
 
 bool NetConfig_detect::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000007e) != 0x0000007e) return false;
+  if ((_has_bits_[0] & 0x0000003e) != 0x0000003e) return false;
 
   return true;
 }
@@ -660,7 +739,8 @@ void NetConfig_detect::Swap(NetConfig_detect* other) {
     std::swap(trainedfile_, other->trainedfile_);
     std::swap(meanimagefile_, other->meanimagefile_);
     std::swap(threshold_, other->threshold_);
-    std::swap(nmsoverlap_, other->nmsoverlap_);
+    std::swap(meanimagefile_1_, other->meanimagefile_1_);
+    std::swap(meanimagefile_2_, other->meanimagefile_2_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -685,6 +765,7 @@ const int NetConfig_calib::kModelFileFieldNumber;
 const int NetConfig_calib::kTrainedFileFieldNumber;
 const int NetConfig_calib::kThresholdFieldNumber;
 const int NetConfig_calib::kMeanImageFileFieldNumber;
+const int NetConfig_calib::kNmsOverlapFieldNumber;
 #endif  // !_MSC_VER
 
 NetConfig_calib::NetConfig_calib()
@@ -709,6 +790,7 @@ void NetConfig_calib::SharedCtor() {
   trainedfile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   threshold_ = 0;
   meanimagefile_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  nmsoverlap_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -778,6 +860,7 @@ void NetConfig_calib::Clear() {
         meanimagefile_->clear();
       }
     }
+    nmsoverlap_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -884,6 +967,22 @@ bool NetConfig_calib::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(61)) goto parse_nmsOverlap;
+        break;
+      }
+
+      // required float nmsOverlap = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
+         parse_nmsOverlap:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, &nmsoverlap_)));
+          set_has_nmsoverlap();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -952,6 +1051,11 @@ void NetConfig_calib::SerializeWithCachedSizes(
       6, this->meanimagefile(), output);
   }
 
+  // required float nmsOverlap = 7;
+  if (has_nmsoverlap()) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(7, this->nmsoverlap(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -1010,6 +1114,11 @@ void NetConfig_calib::SerializeWithCachedSizes(
         6, this->meanimagefile(), target);
   }
 
+  // required float nmsOverlap = 7;
+  if (has_nmsoverlap()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(7, this->nmsoverlap(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -1061,6 +1170,11 @@ int NetConfig_calib::ByteSize() const {
           this->meanimagefile());
     }
 
+    // required float nmsOverlap = 7;
+    if (has_nmsoverlap()) {
+      total_size += 1 + 4;
+    }
+
   }
   if (!unknown_fields().empty()) {
     total_size +=
@@ -1106,6 +1220,9 @@ void NetConfig_calib::MergeFrom(const NetConfig_calib& from) {
     if (from.has_meanimagefile()) {
       set_meanimagefile(from.meanimagefile());
     }
+    if (from.has_nmsoverlap()) {
+      set_nmsoverlap(from.nmsoverlap());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -1123,7 +1240,7 @@ void NetConfig_calib::CopyFrom(const NetConfig_calib& from) {
 }
 
 bool NetConfig_calib::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000003e) != 0x0000003e) return false;
+  if ((_has_bits_[0] & 0x0000007e) != 0x0000007e) return false;
 
   return true;
 }
@@ -1136,6 +1253,7 @@ void NetConfig_calib::Swap(NetConfig_calib* other) {
     std::swap(trainedfile_, other->trainedfile_);
     std::swap(threshold_, other->threshold_);
     std::swap(meanimagefile_, other->meanimagefile_);
+    std::swap(nmsoverlap_, other->nmsoverlap_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

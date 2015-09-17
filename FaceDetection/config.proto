@@ -7,7 +7,8 @@ message NetConfig_detect {
     required string trainedFile = 4;
     required string meanImageFile = 5;
     required float threshold = 6;
-    required float nmsOverlap = 7;
+    optional string meanImageFile_1 = 7;
+    optional string meanImageFile_2 = 8;
 }
 
 message NetConfig_calib {
@@ -17,6 +18,7 @@ message NetConfig_calib {
     required string trainedFile = 4;
     required float threshold = 5;
     required string meanImageFile = 6;
+    required float nmsOverlap = 7;
 }
 
 message NetConfigs {

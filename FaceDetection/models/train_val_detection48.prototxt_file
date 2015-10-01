@@ -9,11 +9,10 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size:48  
-    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_image.binaryproto"
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy_2nd/48net_mean_const128.binaryproto"
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/train_detection48.txt"
+    source: "/media/ssd/data/aflw/data/train_detection48_noflip.txt"
     shuffle: true #cannot shuffle to ensure 48-net and 24-net are dealing with same invividual images
     new_height:48
     new_width:48
@@ -24,17 +23,37 @@ layer {
   name: "data_d48"
   top: "data_d48"
   top: "label_d48"
+  type: "ImageData" 
+  include {
+    phase: TEST
+    stage: "test-on-train"
+  }
+  transform_param {
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy_2nd/48net_mean_const128.binaryproto"
+  }
+  image_data_param {
+    source: "/media/ssd/data/aflw/data/train_detection48_noflip.txt"
+    shuffle: true #cannot shuffle to ensure 48-net and 24-net are dealing with same invividual images
+    new_height:48
+    new_width:48
+    batch_size: 50
+  }
+}
+layer {
+  name: "data_d48"
+  top: "data_d48"
+  top: "label_d48"
   type: "ImageData"
   include {
     phase: TEST
+    stage: "test-on-test"
   }
   transform_param {
     mirror: false
-    crop_size: 48
-    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_image.binaryproto"
+    mean_file: "/home/fanglin/caffe/FaceDetection/models/deploy_2nd/48net_mean_const128.binaryproto"
   }
   image_data_param {
-    source: "/media/ssd/data/aflw/data/faces/detection48_val.txt"
+    source: "/media/ssd/data/aflw/data/faces/detection48_val_noflip.txt"
     #source: "/media/ssd/data/aflw/data/train_detection48.txt"
     new_height:48
     new_width:48
@@ -163,7 +182,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 256 
+    num_output: 512 
     weight_filler {
       type: "xavier"
     }
@@ -178,6 +197,16 @@ layer {
   bottom: "fc1_d48"
   top: "fc1_d48"
 }
+layer {
+  name: "drop1_d48"
+  type: "Dropout"
+  bottom: "fc1_d48"
+  top: "fc1_d48"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+
 layer {
   name: "fc2_d48"
   type: "InnerProduct"

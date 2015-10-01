@@ -167,6 +167,55 @@ std::vector<float> FaceClassifier::Predict(const vector<cv::Mat>& imgs) {
     const float* end = begin + imgs.size()*output_layer->channels();
     return vector<float>(begin, end);
 }
+
+//! Note: Net的Blob是指，每个层的输出数据，即Feature Maps
+// char *query_blob_name = "conv1";
+static unsigned int get_blob_index(boost::shared_ptr< Net<float> > & net, const string& query_blob_name)
+{
+    std::string str_query(query_blob_name);    
+    vector< string > const & blob_names = net->blob_names();
+    for( unsigned int i = 0; i != blob_names.size(); ++i ) 
+    { 
+        if( str_query == blob_names[i] ) 
+        { 
+            return i;
+        } 
+    }
+    LOG(FATAL) << "Unknown blob name: " << str_query;
+}
+
+void FaceClassifier::ExtractFeature(const vector<cv::Mat>& imgs, const string& featName, vector<vector<float> >& features)
+{
+    for (int i = 0; i < num_resos_; i++) {
+        Blob<float>* input_layer = net_->input_blobs()[i];
+        input_layer->Reshape(imgs.size(), num_channels_[i],
+                           input_geometries_[i].height, input_geometries_[i].width);    
+    }
+    net_->Reshape();
+
+    int dim = net_->output_blobs()[0]->channels();
+      
+    for (int i = 0; i < num_resos_; i++) {
+        std::vector<cv::Mat> input_channels;
+        input_channels.clear();
+        WrapInputLayer(&input_channels, imgs.size(), i);
+        Preprocess(imgs, &input_channels, input_geometries_[i], means_[i]);
+    }
+
+    std::vector<Blob<float>*> input_vec;
+    unsigned int blob_id = get_blob_index(net_, featName);
+    net_->ForwardFromTo(0, blob_id);
+    const shared_ptr<Blob<float> > feature_blob = net_->blob_by_name(featName);
+    int dim_features = feature_blob->count() / imgs.size();
+    features.resize(imgs.size(), vector<float>(dim_features));
+    for (int i = 0; i < imgs.size(); i++) {
+        const float *feature_blob_data = feature_blob->cpu_data() + feature_blob->offset(i);
+        for (int j = 0; j < dim_features; j++) {
+            features[i][j] = feature_blob_data[j];
+        }
+    }        
+}
+
 /* Wrap the input layer of the network in separate cv::Mat objects
  * (one per channel). This way we save one memcpy operation and we
  * don't need to rely on cudaMemcpy2D. The last preprocessing

@@ -12,7 +12,8 @@ int main(int argc, const char* argv[])
     ::google::InitGoogleLogging(argv[0]);
     //Caffe::set_mode(Caffe::CPU);
     bool BATCH = true;
-    int net = 24;
+    int net = 48;
+    bool isMultiReso = false;
     float threshold = 0.99;
     
     string model_file, trained_file, mean_file;
@@ -20,29 +21,44 @@ int main(int argc, const char* argv[])
     string listFilepath;
     if (net == 12) {
         threshold = 0.99;
-        model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection12.prototxt";
-        trained_file = "/home/fanglin/caffe/FaceDetection/models/deploy/facecascade_detection12_train_iter_59000.caffemodel";
-        mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto";
+        model_file = "/home/fanglin/caffe/FaceDetection/models/deploy_3rd/deploy_detection12.prototxt";
+        trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection12_train_iter_738000.caffemodel";
+        mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy_3rd/12net_mean_const128.binaryproto";
         listFilepath = "/media/ssd/data/aflw/data/faces/detection12_val_noflip.txt";
+        mean_files.push_back(mean_file);
     }
     
     if (net == 24) {
         threshold = 0.97;
-        model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection24_with12.prototxt";
-        trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_with12_train_iter_39000.caffemodel";
+        if (isMultiReso) {
+            model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection24_with12.prototxt";
+            trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_with12_train_iter_230000.caffemodel";
+            mean_files.push_back("/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto");
+        } else {
+            model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection24.prototxt";
+            trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection24_train_iter_309000.caffemodel";            
+        }
         mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const128.binaryproto";
         listFilepath = "/media/ssd/data/aflw/data/faces/detection24_val_noflip.txt";
         //listFilepath = "/media/ssd/data/aflw/data/neg24_val.txt";
 
-        mean_files.push_back("/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto");
         mean_files.push_back(mean_file);
     }
     
     if (net == 48) {
         threshold = 0.97;
-        model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection48.prototxt";
-        trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection48_train_iter_59000.caffemodel";
-        mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy/48net_mean_const128.binaryproto";
+        if (isMultiReso) {
+            model_file = "/home/fanglin/caffe/FaceDetection/models/deploy/deploy_detection48_with24.prototxt";
+            trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection48_with24_train_iter_13000.caffemodel";
+            mean_files.push_back("/home/fanglin/caffe/FaceDetection/models/deploy/12net_mean_const128.binaryproto");
+            mean_files.push_back("/home/fanglin/caffe/FaceDetection/models/deploy/24net_mean_const128.binaryproto");
+
+        } else {
+            model_file = "/home/fanglin/caffe/FaceDetection/models/deploy_2nd/deploy_detection48.prototxt";
+            trained_file = "/home/fanglin/caffe/FaceDetection/models/snapshots/facecascade_detection48_train_iter_265000.caffemodel";            
+        }
+        mean_file = "/home/fanglin/caffe/FaceDetection/models/deploy_2nd/48net_mean_const128.binaryproto";
+        mean_files.push_back(mean_file);
         listFilepath = "/media/ssd/data/aflw/data/faces/detection48_val_noflip.txt";
     }
     

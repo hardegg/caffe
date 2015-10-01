@@ -544,8 +544,8 @@ int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& sco
     }
     
     // Second NMS after calibration. Only do nms when calibration is done.
-//    if (m_calibrators.size() >= 2)
-//        nms(rects, scores, 0.9);
+    if (m_calibrators.size() >= 2)
+        nms(rects, scores, 0.9);
     
     if (m_detectors.size() < 3)
         return nTotalRects;
@@ -557,9 +557,11 @@ int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& sco
     FaceClassifier *detector48, *calibrator48;
     detector48 = m_detectors[2];
     NetConfig_detect config_d48 = m_configs.detectnet(2);
-    DetectRects(img_extended, extSize, detector48, config_d48, rects, scores);
+    DetectRects_batch(img_extended, extSize, detector48, config_d48, rects, scores);
     // Global NMS.
-    nms(rects, scores, 0.5);    
+    //nms(rects, scores, 0.5); 
+    //nms(rects, scores, 0.1);    
+
     //nms(rects, scores, 0.1);    
     
     // Third calibration
@@ -568,8 +570,7 @@ int FaceDetector::Detect(const Mat& img, vector<Rect>& rects, vector<float>& sco
         calibrator48 = m_calibrators[2];
         CalibrateRects(img_extended, extSize, calibrator48, detector48, 
                 config_c48, config_d48, rects, scores);
-    }
-//  std::sort(scores.begin(), scores.end());          
+    }         
     return nTotalRects;
 }
 

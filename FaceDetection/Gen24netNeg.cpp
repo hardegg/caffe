@@ -13,23 +13,22 @@ using namespace cv;
 int main(int argc, const char* argv[])
 {
     GenerateCalibLabelSet();
-    string folderName = "/media/ssd/data/VOC2007/nonPerson";
     string oFolder = "/media/ssd/data/aflw/data/neg24x24";
     string listFolder = "/media/ssd/data/aflw/data";
     
     int min_FaceSize; float scaleStep; int spacing;
-    min_FaceSize = 28; scaleStep = 1.1; spacing = 4;
+    min_FaceSize = 40; scaleStep = 1.18; spacing = 4;
     FaceDetector facedetector(min_FaceSize, scaleStep, spacing);
     facedetector.LoadConfigs("/home/fanglin/caffe/FaceDetection/faceConfig_2nd.txt");
     
     vector<string> folderNames;
     folderNames.push_back("/media/ssd/data/VOC2007/nonPerson");
-    folderNames.push_back("/media/ssd/data/WuJX/SkinColor/personHeadMasked");
+    //folderNames.push_back("/media/ssd/data/VOC2007/personHeadMasked");
     
     vector<Mat> imgs;    
 
     for (int k = 0; k < folderNames.size(); k++) {
-        folderName = folderNames[k];
+        string folderName = folderNames[k];
         vector<string> filePaths;
         GetFilePaths(folderName, ".jpg|.JPG", filePaths);
         //imgs.resize(oldSize+filePaths.size());

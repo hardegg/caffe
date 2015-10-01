@@ -73,10 +73,13 @@ int main(int argc, char** argv) {
         }
         
         
-//        imshow("img", img);
-//        char c = cv::waitKey(0);
-//        if (c == 'q')
-//            break;
+        imshow("img", img);
+        stringstream ss;
+        ss << "output/" << nImages << ".jpg";
+        imwrite(ss.str(), img);
+        char c = cv::waitKey(1);
+        if (c == 'q')
+            break;
         toc();
     }
     

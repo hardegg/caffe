@@ -39,6 +39,7 @@ class FaceClassifier {
   std::vector<Prediction> Classify(const cv::Mat& img, int N = 1);
   std::vector<float> Predict(const cv::Mat& img);
   std::vector<float> Predict(const vector<cv::Mat>& imgs);
+  void ExtractFeature(const vector<cv::Mat>& imgs, const string& featName, vector<vector<float> >& features);
   int GetLabelDim();
 
  private:
@@ -57,8 +58,6 @@ class FaceClassifier {
   vector<cv::Size> input_geometries_;
   vector<int> num_channels_;
   int   num_resos_;
-
-
 };
 
 #endif	/* FACECLASSIFIER_H */
